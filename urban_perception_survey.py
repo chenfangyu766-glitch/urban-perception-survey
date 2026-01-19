@@ -6,7 +6,7 @@ from datetime import datetime
 
 # --- 1. RESEARCH CONFIGURATION ---
 # IMPORTANT: Update this path to your local image folder
-IMG_DIR = r"D:\SVI score test\Humanscale dataset_views_bologna"
+IMG_DIR = "images"
 TARGET_VOTES = 30  # Increased to 30 as per your PhD research requirement
 
 # --- 2. PAGE SETTINGS ---
@@ -157,4 +157,5 @@ elif st.session_state.step == "thankyou":
     
     if st.button("Finish and Restart"):
         st.session_state.clear()
+
         st.rerun()
