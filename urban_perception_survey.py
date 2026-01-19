@@ -6,7 +6,7 @@ from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
 # --- 1. RESEARCH CONFIGURATION ---
-IMG_DIR = "images"  # 确保 GitHub 仓库里有名为 images 的文件夹
+IMG_DIR = "images" 
 TARGET_VOTES = 30 
 
 # --- 2. PAGE SETTINGS ---
@@ -16,19 +16,21 @@ st.set_page_config(
     layout="centered"
 )
 
-# 自动置顶脚本：解决手机端点击后页面不回弹
+# 强制置顶脚本：增强了 JavaScript 的执行强度
 def scroll_to_top():
     st.components.v1.html(
         """
         <script>
             var body = window.parent.document.querySelector(".main");
-            if (body) { body.scrollTop = 0; }
+            if (body) { 
+                body.scrollTo({top: 0, behavior: 'smooth'}); 
+            }
         </script>
         """,
         height=0,
     )
 
-# Professional CSS
+# 样式美化
 st.markdown("""
     <style>
     .stButton>button { width: 100%; border-radius: 8px; height: 3.5em; font-weight: bold; }
@@ -40,13 +42,11 @@ st.markdown("""
 
 @st.cache_data
 def get_image_list(path):
-    if not os.path.exists(path):
-        return []
+    if not os.path.exists(path): return []
     valid_formats = ('.jpg', '.jpeg', '.png', '.bmp')
     return [f for f in os.listdir(path) if f.lower().endswith(valid_formats)]
 
 def save_vote(left_img, right_img, winner, category, user_type):
-    # 准备这一条新数据
     new_row = {
         "left_image": left_img,
         "right_image": right_img,
@@ -58,54 +58,37 @@ def save_vote(left_img, right_img, winner, category, user_type):
     new_df = pd.DataFrame([new_row])
 
     try:
-        # 建立 Google Sheets 连接
         conn = st.connection("gsheets", type=GSheetsConnection)
-        
+        # 读取时禁用缓存，确保获取最新状态
         try:
-            # 读取现有数据 (ttl=0 保证不使用缓存，实时读写)
             existing_data = conn.read(worksheet="Sheet1", ttl=0)
-            if existing_data.empty:
-                updated_df = new_df
-            else:
-                updated_df = pd.concat([existing_data, new_df], ignore_index=True)
+            updated_df = pd.concat([existing_data, new_df], ignore_index=True)
         except:
-            # 如果表格完全空白或读取出错，直接使用新数据（会自动创建表头）
             updated_df = new_df
-            
-        # 核心：执行更新
-        conn.update(worksheet="Sheet1", data=updated_df)
         
+        conn.update(worksheet="Sheet1", data=updated_df)
+        return True
     except Exception as e:
-        # 如果云端失败，在网页显示错误并存入本地备份
-        st.error(f"Cloud Save Error: {e}")
+        # 这里的错误不再是一闪而过，而是会停留在页面上
+        st.error(f"❌ Cloud Save Error: {e}")
+        # 本地备份
         file_name = f"backup_results_{user_type.lower()}.csv"
-        header = not os.path.exists(file_name)
-        new_df.to_csv(file_name, mode='a', header=header, index=False)
+        new_df.to_csv(file_name, mode='a', header=not os.path.exists(file_name), index=False)
+        return False
 
 # --- 4. STATE MANAGEMENT ---
-if 'step' not in st.session_state:
-    st.session_state.step = "onboarding"
-if 'vote_count' not in st.session_state:
-    st.session_state.vote_count = 0
-if 'user_type' not in st.session_state:
-    st.session_state.user_type = None
+if 'step' not in st.session_state: st.session_state.step = "onboarding"
+if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
+if 'user_type' not in st.session_state: st.session_state.user_type = None
 
 # --- 5. SURVEY STEPS ---
 
 # STEP 1: Onboarding
 if st.session_state.step == "onboarding":
     st.title("🏙️ Urban Perception Study")
-    st.markdown("""
-    Welcome! This research investigates how historic city centers are perceived.
-    
-    **Instructions:**
-    * You will be shown **30 pairs** of street-view images.
-    * Select the one that best fits the description.
-    """)
+    st.markdown("Select your identity to start. Each session contains **30 pairs**.")
     
     st.divider()
-    st.subheader("Please identify yourself:")
-    
     c1, c2 = st.columns(2)
     with c1:
         if st.button("📍 I am a LOCAL RESIDENT"):
@@ -120,24 +103,20 @@ if st.session_state.step == "onboarding":
 
 # STEP 2: Voting Interface
 elif st.session_state.step == "voting":
-    scroll_to_top() # 每一题加载时强制置顶
+    # --- 核心改进：在渲染任何内容前强制置顶 ---
+    scroll_to_top()
     
     images = get_image_list(IMG_DIR)
     
     if len(images) < 2:
         st.error(f"Error: No images found in '{IMG_DIR}' folder.")
     else:
-        # Progress Tracking
-        progress = min(st.session_state.vote_count / TARGET_VOTES, 1.0)
-        st.progress(progress)
+        st.progress(min(st.session_state.vote_count / TARGET_VOTES, 1.0))
         st.caption(f"Progress: {st.session_state.vote_count} / {TARGET_VOTES}")
 
-        # Select Image Pair and Category
         if 'current_pair' not in st.session_state:
             st.session_state.current_pair = random.sample(images, 2)
-            st.session_state.current_cat = random.choice([
-                "Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing"
-            ])
+            st.session_state.current_cat = random.choice(["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing"])
         
         img_l, img_r = st.session_state.current_pair
         category = st.session_state.current_cat
@@ -150,36 +129,30 @@ elif st.session_state.step == "voting":
             st.markdown("**Image A**")
             st.image(os.path.join(IMG_DIR, img_l), use_container_width=True)
             if st.button("Select Image Above", key="btn_l"):
-                save_vote(img_l, img_r, "left", category, st.session_state.user_type)
-                st.session_state.vote_count += 1
-                del st.session_state.current_pair
-                if st.session_state.vote_count >= TARGET_VOTES:
-                    st.session_state.step = "thankyou"
-                st.rerun()
+                # 尝试保存
+                success = save_vote(img_l, img_r, "left", category, st.session_state.user_type)
+                if success:
+                    st.session_state.vote_count += 1
+                    del st.session_state.current_pair
+                    if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "thankyou"
+                    st.rerun()
 
         with col_right:
             st.markdown("**Image B**")
             st.image(os.path.join(IMG_DIR, img_r), use_container_width=True)
             if st.button("Select Image Above", key="btn_r"):
-                save_vote(img_l, img_r, "right", category, st.session_state.user_type)
-                st.session_state.vote_count += 1
-                del st.session_state.current_pair
-                if st.session_state.vote_count >= TARGET_VOTES:
-                    st.session_state.step = "thankyou"
-                st.rerun()
+                success = save_vote(img_l, img_r, "right", category, st.session_state.user_type)
+                if success:
+                    st.session_state.vote_count += 1
+                    del st.session_state.current_pair
+                    if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "thankyou"
+                    st.rerun()
 
-        st.divider()
-        if st.button("Skip this pair ⏩"):
-            del st.session_state.current_pair
-            st.rerun()
-
-# STEP 3: Thank You Screen
+# STEP 3: Thank You
 elif st.session_state.step == "thankyou":
     st.balloons()
-    st.title("Grazie! Thank You!")
-    st.success("Your responses have been recorded in the database.")
-    
-    if st.button("Start New Session"):
+    st.title("Grazie!")
+    st.success("All data synchronized.")
+    if st.button("Start Again"):
         st.session_state.clear()
         st.rerun()
-
