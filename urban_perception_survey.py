@@ -9,36 +9,28 @@ from streamlit_gsheets import GSheetsConnection
 IMG_DIR = "images" 
 TARGET_VOTES = 30 
 
-# --- 2. PAGE SETTINGS ---
 st.set_page_config(
     page_title="Subjective Perception of Historic Centre Street Images",
     page_icon="🏙️",
     layout="centered"
 )
 
-# --- 3. 极致紧凑布局 CSS ---
+# --- 2. 极致排版 CSS ---
 st.markdown("""
     <style>
-    /* 彻底隐藏顶部装饰条和页脚 */
     header {visibility: hidden !important; height: 0px !important;}
     footer {visibility: hidden !important;}
-    
-    /* 极致压缩容器边距，整体大幅向上提升 */
     .main .block-container { 
         padding-top: 0.5rem !important; 
-        margin-top: -3.8rem !important; 
+        margin-top: -3.5rem !important; 
         max-width: 98% !important;
     }
-
-    /* 带数字的自定义进度条 */
     .progress-container {
         width: 100%; background-color: #f0f2f6; border-radius: 10px;
         margin: 5px 0px; position: relative; height: 18px;
     }
     .progress-bar { background-color: #4CAF50; height: 100%; border-radius: 10px; transition: width 0.3s; }
     .progress-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 18px; font-weight: bold; }
-
-    /* 问题文字样式：左对齐，字号加大 */
     .question-text {
         font-size: 1.4rem !important; 
         font-weight: 400;
@@ -47,18 +39,11 @@ st.markdown("""
         color: #1E1E1E;
         line-height: 1.2;
     }
-    .keyword { font-weight: 700; } 
+    .keyword { font-weight: 700; color: #000; } 
 
     @media (max-width: 640px) {
-        /* 图片高度限制 */
         .stImage img { max-height: 28vh !important; object-fit: cover; border-radius: 10px; }
-        
-        /* 强制按钮并排的通用设置 */
-        div[data-testid="stHorizontalBlock"] {
-            gap: 0.5rem !important;
-        }
-        
-        /* 底部 Back & Skip 按钮样式 */
+        div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; }
         .bottom-btns button {
             height: 2.2rem !important;
             font-size: 0.85rem !important;
@@ -66,8 +51,6 @@ st.markdown("""
             color: #666 !important;
             border: 1px solid #ddd !important;
         }
-
-        /* 核心选择按钮样式 */
         .select-btn button {
             height: 3.2em !important;
             font-weight: bold !important;
@@ -77,7 +60,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. 多语言文本配置 ---
+# --- 3. 多语言配置 ---
 LANG_DICT = {
     "English": {
         "title": "Subjective Perception of Historic Centre Street Images",
@@ -108,7 +91,7 @@ LANG_DICT = {
         "role_title": "请选择您的角色：",
         "role_res": "我是当地居民（在此居住或工作）",
         "role_tour": "我是游客（在此游览或旅行）",
-        "q_pre": "哪条街道看起来更 ",
+        "q_pre": "哪条街道看起来更",
         "q_post": "？",
         "btn_back": "⬅️ 返回",
         "btn_skip": "跳过 ⏩",
@@ -138,65 +121,58 @@ LANG_DICT = {
     }
 }
 
-# --- 5. 工具函数 ---
+# 形容词翻译映射（增加了 High Quality）
+CAT_TRANS = {
+    "English": {"Safe": "safe", "Lively": "lively", "Wealthy": "wealthy", "Beautiful": "beautiful", "Boring": "boring", "Depressing": "depressing", "HighQuality": "high quality"},
+    "中文": {"Safe": "安全", "Lively": "活跃", "Wealthy": "高档", "Beautiful": "美丽", "Boring": "乏味", "Depressing": "压抑", "HighQuality": "高质量"},
+    "Italiano": {"Safe": "sicura", "Lively": "vivace", "Wealthy": "benestante", "Beautiful": "bella", "Boring": "noiosa", "Depressing": "deprimente", "HighQuality": "di alta qualità"}
+}
+
+# --- 4. 逻辑处理 ---
 @st.cache_data
 def get_image_list(path):
     if not os.path.exists(path): return []
     return [f for f in os.listdir(path) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))]
 
-# --- 6. 状态初始化 ---
 if 'lang' not in st.session_state: st.session_state.lang = "English"
 if 'step' not in st.session_state: st.session_state.step = "onboarding"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
 if 'temp_votes' not in st.session_state: st.session_state.temp_votes = []
 
-# --- 7. 流程逻辑 ---
+T = LANG_DICT[st.session_state.lang]
 
-# STEP 1: Onboarding
 if st.session_state.step == "onboarding":
     selected_lang = st.radio("Language / 语言 / Lingua", ["English", "中文", "Italiano"], horizontal=True)
     st.session_state.lang = selected_lang
     T = LANG_DICT[st.session_state.lang] 
-    
     st.title(f"🏙️ {T['title']}")
     st.markdown(f"**{T['intro']}**")
-    st.markdown(f"""
-    **{T['instr_title']}**
-    * {T['instr_1']}
-    * {T['instr_2']}
-    * {T['instr_3']}
-    """)
+    st.markdown(f"**{T['instr_title']}**\n* {T['instr_1']}\n* {T['instr_2']}\n* {T['instr_3']}")
     st.divider()
     st.subheader(T['role_title'])
     c1, c2 = st.columns(2)
     with c1:
-        if st.button(T['role_res']):
-            st.session_state.user_type = "Resident"; st.session_state.step = "voting"; st.rerun()
+        if st.button(T['role_res']): st.session_state.user_type = "Resident"; st.session_state.step = "voting"; st.rerun()
     with c2:
-        if st.button(T['role_tour']):
-            st.session_state.user_type = "Tourist"; st.session_state.step = "voting"; st.rerun()
+        if st.button(T['role_tour']): st.session_state.user_type = "Tourist"; st.session_state.step = "voting"; st.rerun()
 
-# STEP 2: Voting Interface
 elif st.session_state.step == "voting":
     T = LANG_DICT[st.session_state.lang]
     images = get_image_list(IMG_DIR)
-    
-    # 进度条移至最上方
     percent = int((st.session_state.vote_count / TARGET_VOTES) * 100)
     st.markdown(f'''<div class="progress-container"><div class="progress-bar" style="width: {percent}%;"></div>
                 <div class="progress-text">{st.session_state.vote_count} / {TARGET_VOTES}</div></div>''', unsafe_allow_html=True)
 
     if 'pair' not in st.session_state:
         st.session_state.pair = random.sample(images, 2)
-        st.session_state.cat = random.choice(["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing"])
+        # 您可以根据需要在这里调整随机抽取的维度
+        st.session_state.cat = random.choice(["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing", "HighQuality"])
     
     l, r = st.session_state.pair
     cat = st.session_state.cat
-    
-    # 问题显示
-    st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{cat.lower()}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
+    display_cat = CAT_TRANS[st.session_state.lang].get(cat, cat.lower())
+    st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
 
-    # 核心对比区
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, l), use_container_width=True)
@@ -217,16 +193,12 @@ elif st.session_state.step == "voting":
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 底部功能区 (Back & Skip)
-    st.write("") # 增加一个极小的空隙
+    st.write("") 
     b_col1, b_col2 = st.columns(2)
     with b_col1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
         if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
-            last = st.session_state.temp_votes.pop()
-            st.session_state.pair = [last["left_image"], last["right_image"]]
-            st.session_state.cat = last["category"]
-            st.session_state.vote_count -= 1; st.rerun()
+            last = st.session_state.temp_votes.pop(); st.session_state.pair = [last["left_image"], last["right_image"]]; st.session_state.cat = last["category"]; st.session_state.vote_count -= 1; st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     with b_col2:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
@@ -235,25 +207,17 @@ elif st.session_state.step == "voting":
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# STEP 3: End
 elif st.session_state.step == "end":
     T = LANG_DICT[st.session_state.lang]
-    st.balloons()
-    st.title(f"✅ {T['end_title']}")
-    final_df = pd.DataFrame(st.session_state.temp_votes)
-    final_df["user_type"] = st.session_state.user_type
-    final_df["language"] = st.session_state.lang
+    st.balloons(); st.title(f"✅ {T['end_title']}")
+    final_df = pd.DataFrame(st.session_state.temp_votes); final_df["user_type"] = st.session_state.user_type; final_df["language"] = st.session_state.lang
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        try:
-            existing_data = conn.read(worksheet="Sheet1", ttl=0)
-            updated_df = pd.concat([existing_data, final_df], ignore_index=True)
-        except: updated_df = final_df
+        existing_data = conn.read(worksheet="Sheet1", ttl=0)
+        updated_df = pd.concat([existing_data, final_df], ignore_index=True)
         conn.update(worksheet="Sheet1", data=updated_df)
         st.success(T['success'])
-    except Exception as e:
-        st.error(f"Error: {e}")
-        st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
+    except: st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
     if st.button(T['restart']):
         for k in list(st.session_state.keys()): del st.session_state[k]
         st.rerun()
