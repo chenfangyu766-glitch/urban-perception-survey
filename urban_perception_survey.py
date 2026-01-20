@@ -15,7 +15,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. 极致排版 CSS (核心：强制底部按钮并排) ---
+# --- 2. 极致排版 CSS (核心：强制底部按钮并排且居左) ---
 st.markdown("""
     <style>
     /* 移除默认 Header 和内边距 */
@@ -27,7 +27,7 @@ st.markdown("""
         max-width: 98% !important;
     }
 
-    /* 数字进度条 */
+    /* 自定义数字进度条 */
     .progress-container {
         width: 100%; background-color: #f0f2f6; border-radius: 10px;
         margin: 5px 0px; position: relative; height: 18px;
@@ -49,11 +49,18 @@ st.markdown("""
     @media (max-width: 640px) {
         .stImage img { max-height: 28vh !important; object-fit: cover; border-radius: 10px; }
         
-        /* 【关键修改】强制底部的两个列（Back和Skip）永远并排 */
-        div[data-testid="column"]:has(div.bottom-btns) {
-            width: 50% !important;
-            flex: 1 1 50% !important;
-            min-width: 50% !important;
+        /* 【核心改动】强制 Back 和 Skip 并在左侧一行 */
+        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-start !important; /* 居左靠齐 */
+            gap: 10px !important; /* 按钮之间的间距 */
+        }
+        
+        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) > div {
+            width: auto !important; /* 宽度随按钮内容变化 */
+            min-width: 80px !important; /* 保证按钮不会被压缩变形 */
+            flex: none !important;
         }
         
         /* 辅助按钮样式 */
@@ -63,6 +70,7 @@ st.markdown("""
             background-color: #f8f9fa !important;
             color: #666 !important;
             border: 1px solid #ddd !important;
+            padding: 0 10px !important;
         }
 
         /* 核心选择按钮样式 */
@@ -75,7 +83,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 多语言及翻译配置 ---
+# --- 3. 多语言配置 ---
 LANG_DICT = {
     "English": {
         "title": "Subjective Perception of Historic Centre Street Images",
@@ -92,7 +100,7 @@ LANG_DICT = {
         "btn_back": "⬅️ Back",
         "btn_skip": "Skip ⏩",
         "btn_select": "Select Above",
-        "success": "✅ Data successfully synced!",
+        "success": "✅ Data synced!",
         "end_title": "Session Complete",
         "restart": "Restart"
     },
@@ -111,7 +119,7 @@ LANG_DICT = {
         "btn_back": "⬅️ 返回",
         "btn_skip": "跳过 ⏩",
         "btn_select": "选择上方图片",
-        "success": "✅ 数据已成功同步！",
+        "success": "✅ 数据已同步！",
         "end_title": "问卷已完成",
         "restart": "重新开始"
     },
@@ -186,9 +194,9 @@ elif st.session_state.step == "voting":
     l, r = st.session_state.pair
     cat = st.session_state.cat
     display_cat = CAT_TRANS[st.session_state.lang].get(cat, cat.lower())
-    
     st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
 
+    # 核心对比区
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, l), use_container_width=True)
@@ -209,9 +217,9 @@ elif st.session_state.step == "voting":
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 底部并排功能区
+    # 底部并排居左功能区
     st.write("") 
-    b_col1, b_col2 = st.columns(2)
+    b_col1, b_col2 = st.columns([1, 1])
     with b_col1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
         if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
