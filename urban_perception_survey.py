@@ -53,7 +53,7 @@ st.markdown("""
         }
         div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) > div {
             width: auto !important;
-            min-width: 80px !important;
+            min-width: 85px !important;
             flex: none !important;
         }
         .bottom-btns button {
@@ -134,7 +134,6 @@ LANG_DICT = {
     }
 }
 
-# 已精简翻译表
 CAT_TRANS = {
     "English": {"Safe": "safe", "Lively": "lively", "Wealthy": "wealthy", "Beautiful": "beautiful", "Boring": "boring", "Depressing": "depressing"},
     "中文": {"Safe": "安全", "Lively": "活跃", "Wealthy": "高档", "Beautiful": "美丽", "Boring": "乏味", "Depressing": "压抑"},
@@ -147,17 +146,26 @@ def get_image_list(path):
     if not os.path.exists(path): return []
     return [f for f in os.listdir(path) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))]
 
+# --- 5. 状态管理 ---
 if 'lang' not in st.session_state: st.session_state.lang = "English"
 if 'step' not in st.session_state: st.session_state.step = "onboarding"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
 if 'temp_votes' not in st.session_state: st.session_state.temp_votes = []
 
-T = LANG_DICT[st.session_state.lang]
+# 平衡随机化：初始化 30 个题目的池
+if 'question_pool' not in st.session_state:
+    cats = ["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing"]
+    pool = cats * 5 # 每个维度 5 次，总计 30 题
+    random.shuffle(pool)
+    st.session_state.question_pool = pool
+
+# --- 6. 流程逻辑 ---
 
 if st.session_state.step == "onboarding":
     selected_lang = st.radio("Language / 语言 / Lingua", ["English", "中文", "Italiano"], horizontal=True)
     st.session_state.lang = selected_lang
     T = LANG_DICT[st.session_state.lang] 
+    
     st.title(f"🏙️ {T['title']}")
     st.markdown(f"**{T['intro']}**")
     st.markdown(f"**{T['instr_title']}**\n* {T['instr_1']}\n* {T['instr_2']}\n* {T['instr_3']}")
@@ -173,27 +181,32 @@ elif st.session_state.step == "voting":
     T = LANG_DICT[st.session_state.lang]
     images = get_image_list(IMG_DIR)
     
+    # 顶部进度条
     percent = int((st.session_state.vote_count / TARGET_VOTES) * 100)
     st.markdown(f'''<div class="progress-container"><div class="progress-bar" style="width: {percent}%;"></div>
                 <div class="progress-text">{st.session_state.vote_count} / {TARGET_VOTES}</div></div>''', unsafe_allow_html=True)
 
+    # 从平衡池中提取当前维度
+    cat_eng = st.session_state.question_pool[st.session_state.vote_count]
+    display_cat = CAT_TRANS[st.session_state.lang][cat_eng]
+
     if 'pair' not in st.session_state:
         st.session_state.pair = random.sample(images, 2)
-        # 精简后的随机池
-        st.session_state.cat = random.choice(["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing"])
     
     l, r = st.session_state.pair
-    cat = st.session_state.cat
-    display_cat = CAT_TRANS[st.session_state.lang].get(cat, cat.lower())
+    
+    # 问题文本
     st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
 
+    # 核心对比区
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, l), use_container_width=True)
         st.markdown('<div class="select-btn">', unsafe_allow_html=True)
         if st.button(T['btn_select'], key="btn_l"):
-            st.session_state.temp_votes.append({"left_image": l, "right_image": r, "winner": "left", "category": cat, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-            st.session_state.vote_count += 1; del st.session_state.pair
+            st.session_state.temp_votes.append({"left_image": l, "right_image": r, "winner": "left", "category": cat_eng, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            st.session_state.vote_count += 1
+            if 'pair' in st.session_state: del st.session_state.pair
             if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
@@ -201,18 +214,22 @@ elif st.session_state.step == "voting":
         st.image(os.path.join(IMG_DIR, r), use_container_width=True)
         st.markdown('<div class="select-btn">', unsafe_allow_html=True)
         if st.button(T['btn_select'], key="btn_r"):
-            st.session_state.temp_votes.append({"left_image": l, "right_image": r, "winner": "right", "category": cat, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-            st.session_state.vote_count += 1; del st.session_state.pair
+            st.session_state.temp_votes.append({"left_image": l, "right_image": r, "winner": "right", "category": cat_eng, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            st.session_state.vote_count += 1
+            if 'pair' in st.session_state: del st.session_state.pair
             if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # 底部并排功能区
     st.write("") 
     b_col1, b_col2 = st.columns([1, 1])
     with b_col1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
         if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
-            last = st.session_state.temp_votes.pop(); st.session_state.pair = [last["left_image"], last["right_image"]]; st.session_state.cat = last["category"]; st.session_state.vote_count -= 1; st.rerun()
+            last = st.session_state.temp_votes.pop()
+            st.session_state.pair = [last["left_image"], last["right_image"]]
+            st.session_state.vote_count -= 1; st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     with b_col2:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
