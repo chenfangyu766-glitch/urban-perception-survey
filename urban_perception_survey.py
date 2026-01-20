@@ -5,76 +5,100 @@ import random
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# --- 1. 配置 ---
+# --- 1. RESEARCH CONFIGURATION ---
 IMG_DIR = "images" 
 TARGET_VOTES = 30 
 
-st.set_page_config(page_title="Urban Study", layout="centered")
+# --- 2. 极致压缩布局设置 ---
+st.set_page_config(
+    page_title="Urban Study",
+    page_icon="🏙️",
+    layout="centered"
+)
 
-# --- 2. 物理压缩样式 (这是解决你问题的唯一钥匙) ---
 st.markdown("""
     <style>
-    /* 1. 消除页面所有不必要的边距 */
-    .main .block-container { 
-        padding-top: 0.5rem !important; 
-        padding-bottom: 0rem !important;
-        max-width: 95% !important;
-    }
+    /* 1. 彻底隐藏顶部装饰条、Fork按钮和底部署名 */
+    header {visibility: hidden !important; height: 0px !important;}
+    footer {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
     
-    /* 2. 手机端强制压缩图片高度 */
+    /* 2. 移除容器内边距，并强制内容向上移动 */
+    .main .block-container { 
+        padding-top: 0rem !important; 
+        padding-bottom: 0rem !important;
+        margin-top: -3.5rem !important; /* 核心：强行把内容往最顶端推 */
+        max-width: 98% !important;
+    }
+
+    /* 3. 手机端极致压缩布局 */
     @media (max-width: 640px) {
+        /* 限制图片高度为屏幕的 28%，确保两张图都能出现在一屏 */
         .stImage img {
-            max-height: 30vh !important; /* 核心：只占屏幕30%高度 */
+            max-height: 28vh !important; 
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
         }
-        /* 标题字体变小，减少占用空间 */
+        
+        /* 进一步缩小标题、进度条的间距 */
         h3 { 
             font-size: 1rem !important; 
-            margin-top: -10px !important;
-            margin-bottom: 0px !important; 
+            margin-top: -15px !important;
+            margin-bottom: 5px !important; 
         }
-        /* 进度条变细 */
-        .stProgress { height: 4px !important; }
-        /* 按钮紧凑化 */
+        
+        .stProgress { margin-top: -10px !important; }
+        
+        /* 紧凑按钮：减少高度和间距 */
         .stButton>button {
-            height: 2.8em !important;
+            height: 2.6em !important;
+            font-size: 0.85rem !important;
             margin-top: -5px !important;
-            font-size: 0.8rem !important;
+            margin-bottom: 10px !important;
         }
-        /* 隐藏电脑端的提示字 */
-        .desktop-hint { display: none; }
+
+        /* 移除列之间的多余间隙 */
+        [data-testid="column"] {
+            padding: 0px 5px !important;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 辅助函数 ---
+# --- 3. CORE UTILITIES ---
+
 @st.cache_data
 def get_image_list(path):
     if not os.path.exists(path): return []
     valid_formats = ('.jpg', '.jpeg', '.png', '.bmp')
     return [f for f in os.listdir(path) if f.lower().endswith(valid_formats)]
 
-# --- 4. 状态初始化 ---
+# --- 4. STATE MANAGEMENT ---
 if 'step' not in st.session_state: st.session_state.step = "start"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
 if 'temp_votes' not in st.session_state: st.session_state.temp_votes = []
+if 'user_type' not in st.session_state: st.session_state.user_type = None
 
-# --- 5. 逻辑 ---
+# --- 5. SURVEY STEPS ---
 
-# STEP 1: 开始
+# STEP 1: 开始页面
 if st.session_state.step == "start":
-    st.title("🏙️ Urban Perception")
-    st.write("30-pair comparison study.")
+    st.title("🏙️ Urban Perception Study")
+    st.markdown("Please select your identity to begin.")
+    st.divider()
     c1, c2 = st.columns(2)
     with c1:
         if st.button("📍 RESIDENT"):
-            st.session_state.u = "Resident"; st.session_state.step = "voting"; st.rerun()
+            st.session_state.user_type = "Resident"
+            st.session_state.step = "voting"
+            st.rerun()
     with c2:
         if st.button("📸 TOURIST"):
-            st.session_state.u = "Tourist"; st.session_state.step = "voting"; st.rerun()
+            st.session_state.user_type = "Tourist"
+            st.session_state.step = "voting"
+            st.rerun()
 
-# STEP 2: 投票 (高度压缩版)
+# STEP 2: 核心投票界面 (极致紧凑版)
 elif st.session_state.step == "voting":
     images = get_image_list(IMG_DIR)
     
@@ -88,10 +112,9 @@ elif st.session_state.step == "voting":
     l, r = st.session_state.pair
     cat = st.session_state.cat
     
-    # 问题文字（精简）
     st.subheader(f"Which looks more **{cat.lower()}**?")
 
-    # 左右并排布局
+    # 左右排列布局
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, l), use_container_width=True)
@@ -111,7 +134,7 @@ elif st.session_state.step == "voting":
             if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
             st.rerun()
 
-    # 底端功能按钮（缩小显示）
+    # 底端功能按钮（极小化）
     st.write("---")
     bc1, bc2 = st.columns(2)
     with bc1:
@@ -123,10 +146,10 @@ elif st.session_state.step == "voting":
         if st.button("Skip ⏩"):
             del st.session_state.pair; st.rerun()
 
-# STEP 3: 结束并保存到 Google Sheets
+# STEP 3: 结束并正式同步到 Google Sheets
 elif st.session_state.step == "end":
     final_df = pd.DataFrame(st.session_state.temp_votes)
-    final_df["user_type"] = st.session_state.u
+    final_df["user_type"] = st.session_state.user_type
     
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
@@ -136,11 +159,11 @@ elif st.session_state.step == "end":
         except:
             updated_df = final_df
         conn.update(worksheet="Sheet1", data=updated_df)
-        st.success("✅ Data Synced!")
+        st.success("✅ Data Synced to Google Sheets!")
     except Exception as e:
         st.error(f"Sync error: {e}")
-        st.download_button("Download CSV Backup", final_df.to_csv(index=False), "backup.csv")
+        st.download_button("Download Backup CSV", final_df.to_csv(index=False), "backup.csv")
 
     st.balloons()
-    st.write("Done! Thank you.")
+    st.write("PhD Research Session Complete. Thank you!")
     if st.button("Restart"): st.session_state.clear(); st.rerun()
