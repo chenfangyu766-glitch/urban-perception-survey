@@ -15,9 +15,10 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. 极致排版 CSS ---
+# --- 2. 极致排版 CSS (核心：强制底部按钮并排) ---
 st.markdown("""
     <style>
+    /* 移除默认 Header 和内边距 */
     header {visibility: hidden !important; height: 0px !important;}
     footer {visibility: hidden !important;}
     .main .block-container { 
@@ -25,12 +26,16 @@ st.markdown("""
         margin-top: -3.5rem !important; 
         max-width: 98% !important;
     }
+
+    /* 数字进度条 */
     .progress-container {
         width: 100%; background-color: #f0f2f6; border-radius: 10px;
         margin: 5px 0px; position: relative; height: 18px;
     }
     .progress-bar { background-color: #4CAF50; height: 100%; border-radius: 10px; transition: width 0.3s; }
     .progress-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 18px; font-weight: bold; }
+
+    /* 问题文字左对齐 */
     .question-text {
         font-size: 1.4rem !important; 
         font-weight: 400;
@@ -43,7 +48,15 @@ st.markdown("""
 
     @media (max-width: 640px) {
         .stImage img { max-height: 28vh !important; object-fit: cover; border-radius: 10px; }
-        div[data-testid="stHorizontalBlock"] { gap: 0.5rem !important; }
+        
+        /* 【关键修改】强制底部的两个列（Back和Skip）永远并排 */
+        div[data-testid="column"]:has(div.bottom-btns) {
+            width: 50% !important;
+            flex: 1 1 50% !important;
+            min-width: 50% !important;
+        }
+        
+        /* 辅助按钮样式 */
         .bottom-btns button {
             height: 2.2rem !important;
             font-size: 0.85rem !important;
@@ -51,6 +64,8 @@ st.markdown("""
             color: #666 !important;
             border: 1px solid #ddd !important;
         }
+
+        /* 核心选择按钮样式 */
         .select-btn button {
             height: 3.2em !important;
             font-weight: bold !important;
@@ -60,7 +75,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 多语言配置 ---
+# --- 3. 多语言及翻译配置 ---
 LANG_DICT = {
     "English": {
         "title": "Subjective Perception of Historic Centre Street Images",
@@ -121,7 +136,6 @@ LANG_DICT = {
     }
 }
 
-# 形容词翻译映射（增加了 High Quality）
 CAT_TRANS = {
     "English": {"Safe": "safe", "Lively": "lively", "Wealthy": "wealthy", "Beautiful": "beautiful", "Boring": "boring", "Depressing": "depressing", "HighQuality": "high quality"},
     "中文": {"Safe": "安全", "Lively": "活跃", "Wealthy": "高档", "Beautiful": "美丽", "Boring": "乏味", "Depressing": "压抑", "HighQuality": "高质量"},
@@ -159,18 +173,20 @@ if st.session_state.step == "onboarding":
 elif st.session_state.step == "voting":
     T = LANG_DICT[st.session_state.lang]
     images = get_image_list(IMG_DIR)
+    
+    # 顶部进度条
     percent = int((st.session_state.vote_count / TARGET_VOTES) * 100)
     st.markdown(f'''<div class="progress-container"><div class="progress-bar" style="width: {percent}%;"></div>
                 <div class="progress-text">{st.session_state.vote_count} / {TARGET_VOTES}</div></div>''', unsafe_allow_html=True)
 
     if 'pair' not in st.session_state:
         st.session_state.pair = random.sample(images, 2)
-        # 您可以根据需要在这里调整随机抽取的维度
         st.session_state.cat = random.choice(["Safe", "Lively", "Wealthy", "Beautiful", "Boring", "Depressing", "HighQuality"])
     
     l, r = st.session_state.pair
     cat = st.session_state.cat
     display_cat = CAT_TRANS[st.session_state.lang].get(cat, cat.lower())
+    
     st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
@@ -193,6 +209,7 @@ elif st.session_state.step == "voting":
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # 底部并排功能区
     st.write("") 
     b_col1, b_col2 = st.columns(2)
     with b_col1:
