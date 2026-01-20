@@ -11,51 +11,55 @@ TARGET_VOTES = 30
 
 st.set_page_config(page_title="Urban Study", layout="centered")
 
-# --- 2. 极致排版 CSS (解决间距、字号和位移问题) ---
+# --- 2. 精致平衡 CSS (兼顾空间与美感) ---
 st.markdown("""
     <style>
-    /* 1. 移除 Streamlit 头部和边距 */
+    /* 1. 顶部处理：保留极小边距，避免死贴边 */
     header {visibility: hidden !important; height: 0px !important;}
     .main .block-container { 
-        padding-top: 0rem !important; 
-        margin-top: -3.8rem !important; /* 整体大幅向上提 */
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
+        padding-top: 0.5rem !important; 
+        margin-top: -3rem !important; 
+        max-width: 95% !important;
     }
 
-    /* 2. 核心问题文字 (Which looks more...) 样式优化 */
+    /* 2. 问题文字：大而清晰，且有呼吸感 */
     .question-text {
-        font-size: 1.3rem !important; /* 放大字体 */
-        font-weight: bold;
-        color: #31333F;
+        font-size: 1.4rem !important;
+        font-weight: 700;
+        color: #1E1E1E;
         text-align: center;
-        margin-bottom: -10px !important; /* 消除下方空白 */
-        margin-top: 5px !important;
+        margin: 10px 0px 5px 0px !important;
     }
 
-    /* 3. 手机端极致压缩布局 */
+    /* 3. 手机端细节优化 */
     @media (max-width: 640px) {
-        /* 图片高度继续收缩，腾出空间给下方按钮 */
+        /* 图片比例恢复到更自然的程度 */
         .stImage img {
-            max-height: 26vh !important; 
+            max-height: 28vh !important; 
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 1px solid #EEEEEE; /* 增加精致感边框 */
         }
         
-        /* 进度条压缩 */
-        .stProgress { margin-top: -5px !important; margin-bottom: -15px !important; }
+        /* 进度条 */
+        .stProgress { margin-top: -10px !important; }
 
-        /* 统一所有按钮高度，减少间距 */
-        .stButton>button {
-            height: 2.4em !important;
-            padding: 0px !important;
-            margin-top: -10px !important;
-            margin-bottom: 2px !important;
+        /* 主选择按钮：增加圆角和间距 */
+        [data-testid="column"] .stButton>button {
+            height: 3em !important;
+            border-radius: 10px !important;
+            margin-top: 5px !important;
+            background-color: #FFFFFF;
+            border: 1.5px solid #000000;
         }
-        
-        /* 专门针对 Back 和 Skip 的行间距优化 */
-        [data-testid="stHorizontalBlock"] {
-            gap: 0.2rem !important;
+
+        /* 底部功能键：小巧、灰色、不挤占空间 */
+        .footer-buttons button {
+            height: 2.2em !important;
+            font-size: 0.8rem !important;
+            color: #666666 !important;
+            border: 1px solid #DDDDDD !important;
+            background-color: #F9F9F9 !important;
         }
     }
     </style>
@@ -72,10 +76,11 @@ if 'step' not in st.session_state: st.session_state.step = "start"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
 if 'temp_votes' not in st.session_state: st.session_state.temp_votes = []
 
-# --- 5. 问卷流程 ---
+# --- 5. 逻辑控制 ---
 
 if st.session_state.step == "start":
-    st.title("🏙️ Urban Perception")
+    st.title("🏙️ Urban Perception Study")
+    st.write("Professional Research Interface")
     c1, c2 = st.columns(2)
     with c1:
         if st.button("📍 RESIDENT"):
@@ -86,8 +91,6 @@ if st.session_state.step == "start":
 
 elif st.session_state.step == "voting":
     images = get_image_list(IMG_DIR)
-    
-    # 顶部极简进度条
     st.progress(st.session_state.vote_count / TARGET_VOTES)
     
     if 'pair' not in st.session_state:
@@ -96,11 +99,9 @@ elif st.session_state.step == "voting":
     
     l, r = st.session_state.pair
     cat = st.session_state.cat
-    
-    # 使用自定义 HTML 放大问题文字
-    st.markdown(f'<p class="question-text">Which looks more <u>{cat.lower()}</u>?</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="question-text">Which street looks more <u>{cat.lower()}</u>?</p>', unsafe_allow_html=True)
 
-    # 1. 核心投票按钮区
+    # 投票区
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, l), use_container_width=True)
@@ -119,20 +120,23 @@ elif st.session_state.step == "voting":
             if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
             st.rerun()
 
-    # 2. 功能辅助区 (Back 和 Skip 紧跟在下方)
-    # 我们不再使用 st.write("---") 因为分割线占空间
-    aux1, aux2 = st.columns(2)
-    with aux1:
+    # 功能区：通过特殊的容器类名来区分样式
+    st.write("") # 增加一点点呼吸间距
+    f_col1, f_col2 = st.columns(2)
+    with f_col1:
+        st.markdown('<div class="footer-buttons">', unsafe_allow_html=True)
         if st.button("⬅️ Back", disabled=(st.session_state.vote_count == 0)):
             last = st.session_state.temp_votes.pop()
             st.session_state.pair = [last["l"], last["r"]]; st.session_state.cat = last["c"]
             st.session_state.vote_count -= 1; st.rerun()
-    with aux2:
+        st.markdown('</div>', unsafe_allow_html=True)
+    with f_col2:
+        st.markdown('<div class="footer-buttons">', unsafe_allow_html=True)
         if st.button("Skip ⏩"):
             del st.session_state.pair; st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.step == "end":
-    # 自动保存逻辑同步
     final_df = pd.DataFrame(st.session_state.temp_votes)
     final_df["user_type"] = st.session_state.u
     try:
@@ -140,11 +144,10 @@ elif st.session_state.step == "end":
         existing_data = conn.read(worksheet="Sheet1", ttl=0)
         updated_df = pd.concat([existing_data, final_df], ignore_index=True)
         conn.update(worksheet="Sheet1", data=updated_df)
-        st.success("Data Saved!")
+        st.success("Success! Data saved to Google Sheets.")
     except Exception as e:
-        st.error(f"Sync failed: {e}")
+        st.error("Save error, please download backup.")
         st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
     
     st.balloons()
-    st.write("Thanks for your time!")
     if st.button("Restart"): st.session_state.clear(); st.rerun()
