@@ -36,7 +36,7 @@ st.markdown("""
 # --- 3. 翻译字典 ---
 LANG_DICT = {
     "English": {
-        "title": "Urban Perception Study",
+        "title": "Subjective Perception of Historic Centre Street Images",
         "intro": "Welcome! This research investigates how historic centres are perceived. Your input helps calibrate our models.",
         "instr_title": "Instructions:",
         "instr_1": "You will be shown **30 pairs** of street-view images.",
@@ -68,7 +68,7 @@ LANG_DICT = {
         "restart": "重新开始"
     },
     "Italiano": {
-        "title": "Studio sulla Percezione Urbana",
+        "title": "Percezione Soggettiva delle Immagini Stradali del Centro Storico",
         "intro": "Benvenuti! Questa ricerca indaga la percezione dei centri storici. Il vostro contributo aiuta a calibrare i nostri modelli.",
         "instr_title": "Istruzioni:",
         "instr_1": "Vi verranno mostrate **30 coppie** di immagini.",
@@ -191,4 +191,5 @@ elif st.session_state.step == "end":
         st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
     
     if st.button(T['restart']): st.session_state.clear(); st.rerun()
+
 
