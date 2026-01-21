@@ -10,7 +10,7 @@ IMG_DIR = "images"
 TARGET_VOTES = 30 
 CASES = ["CaseA", "CaseB", "CaseC", "CaseD"] 
 
-st.set_page_config(page_title="Urban Perception Study", page_icon="🏙️", layout="centered")
+st.set_page_config(page_title="Subjective Perception of Historic Centre Street Images", page_icon="🏙️", layout="centered")
 
 # --- 2. 极致排版 CSS ---
 st.markdown("""
@@ -191,3 +191,4 @@ elif st.session_state.step == "end":
         st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
     
     if st.button(T['restart']): st.session_state.clear(); st.rerun()
+
