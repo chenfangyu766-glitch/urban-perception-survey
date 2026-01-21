@@ -11,7 +11,7 @@ TARGET_VOTES = 30
 CASES = ["CaseA", "CaseB", "CaseC", "CaseD"] 
 
 st.set_page_config(
-    page_title="Urban Perception Study", 
+    page_title="Subjective Perception of Historic Centre Street Images", 
     page_icon="🏙️", 
     layout="centered"
 )
@@ -159,4 +159,5 @@ elif st.session_state.step == "end":
         st.download_button("Download CSV Backup", final_df.to_csv(index=False), "survey_data.csv")
     
     if st.button("Restart"): st.session_state.clear(); st.rerun()
+
 
