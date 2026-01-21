@@ -10,30 +10,71 @@ IMG_DIR = "images"
 TARGET_VOTES = 30 
 CASES = ["CaseA", "CaseB", "CaseC", "CaseD"] 
 
-st.set_page_config(page_title="Urban Perception Study", layout="centered")
+st.set_page_config(
+    page_title="Urban Perception Study",
+    page_icon="🏙️",
+    layout="centered"
+)
 
 # --- 2. 极致排版 CSS ---
 st.markdown("""
     <style>
     header {visibility: hidden !important; height: 0px !important;}
     footer {visibility: hidden !important;}
-    .main .block-container { padding-top: 0.5rem !important; margin-top: -3.5rem !important; max-width: 98% !important; }
-    .progress-container { width: 100%; background-color: #f0f2f6; border-radius: 10px; margin: 5px 0px; position: relative; height: 18px; }
+    .main .block-container { 
+        padding-top: 0.5rem !important; 
+        margin-top: -3.5rem !important; 
+        max-width: 98% !important;
+    }
+    .progress-container {
+        width: 100%; background-color: #f0f2f6; border-radius: 10px;
+        margin: 5px 0px; position: relative; height: 18px;
+    }
     .progress-bar { background-color: #4CAF50; height: 100%; border-radius: 10px; transition: width 0.3s; }
     .progress-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 18px; font-weight: bold; }
-    .question-text { font-size: 1.4rem !important; font-weight: 400; text-align: left !important; margin: 10px 0px !important; color: #1E1E1E; }
+    
+    .question-text {
+        font-size: 1.4rem !important; 
+        font-weight: 400;
+        text-align: left !important;
+        margin: 10px 0px !important;
+        color: #1E1E1E;
+        line-height: 1.2;
+    }
     .keyword { font-weight: 700; color: #000; } 
+
     @media (max-width: 640px) {
         .stImage img { max-height: 28vh !important; object-fit: cover; border-radius: 10px; }
-        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; gap: 10px !important; }
-        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) > div { width: auto !important; min-width: 85px !important; flex: none !important; }
-        .bottom-btns button { height: 2.2rem !important; font-size: 0.85rem !important; background-color: #f8f9fa !important; border: 1px solid #ddd !important; padding: 0 10px !important; }
-        .select-btn button { height: 3.2em !important; font-weight: bold !important; border: 2px solid #000 !important; }
+        
+        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            gap: 10px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) > div {
+            width: auto !important;
+            min-width: 85px !important;
+            flex: none !important;
+        }
+        .bottom-btns button {
+            height: 2.2rem !important;
+            font-size: 0.85rem !important;
+            background-color: #f8f9fa !important;
+            color: #666 !important;
+            border: 1px solid #ddd !important;
+            padding: 0 10px !important;
+        }
+        .select-btn button {
+            height: 3.2em !important;
+            font-weight: bold !important;
+            border: 2px solid #000 !important;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 翻译字典 ---
+# --- 3. 完整多语言字典 (包含感谢语) ---
 LANG_DICT = {
     "English": {
         "title": "Subjective Perception of Historic Centre Street Images",
@@ -47,7 +88,10 @@ LANG_DICT = {
         "role_tour": "I am a tourist (Visit or travel here)",
         "q_pre": "Which street looks more ", "q_post": "?",
         "btn_back": "⬅️ Back", "btn_skip": "Skip ⏩", "btn_select": "Select Above",
-        "success": "✅ Data synced!", "end_title": "Session Complete", "restart": "Restart"
+        "success": "✅ Data synced!", 
+        "end_title": "Session Complete", 
+        "thank_you": "Thank you for your valuable contribution to this doctoral research! Your input helps us better understand the human perception of historic urban environments.",
+        "restart": "Restart for another session"
     },
     "中文": {
         "title": "历史中心街景图像主观感知研究",
@@ -61,7 +105,10 @@ LANG_DICT = {
         "role_tour": "我是游客（在此游览或旅行）",
         "q_pre": "哪条街道看起来更", "q_post": "？",
         "btn_back": "⬅️ 返回", "btn_skip": "跳过 ⏩", "btn_select": "选择上方图片",
-        "success": "✅ 数据已同步！", "end_title": "问卷已完成", "restart": "重新开始"
+        "success": "✅ 数据已同步！", 
+        "end_title": "问卷已完成", 
+        "thank_you": "感谢您为这项博士研究做出的宝贵贡献！您的反馈将帮助我们更好地理解人们对历史城市环境的感知。",
+        "restart": "开始新一轮评价"
     },
     "Italiano": {
         "title": "Percezione Soggettiva delle Immagini Stradali del Centro Storico",
@@ -75,7 +122,10 @@ LANG_DICT = {
         "role_tour": "Sono un turista (Visita o viaggio qui)",
         "q_pre": "Quale strada sembra più ", "q_post": "?",
         "btn_back": "⬅️ Indietro", "btn_skip": "Salta ⏩", "btn_select": "Seleziona sopra",
-        "success": "✅ Dati sincronizzati!", "end_title": "Sessione completata", "restart": "Ricomincia"
+        "success": "✅ Dati sincronizzati!", 
+        "end_title": "Sessione completata", 
+        "thank_you": "Grazie per il tuo prezioso contributo a questa ricerca dottorale! Il tuo feedback ci aiuta a comprendere meglio la percezione umana degli ambienti urbani storici.",
+        "restart": "Ricomincia"
     }
 }
 
@@ -85,7 +135,7 @@ CAT_TRANS = {
     "Italiano": {"Safe": "sicura", "Lively": "vivace", "Wealthy": "benestante", "Beautiful": "bella", "Boring": "noiosa", "Depressing": "deprimente"}
 }
 
-# --- 4. 辅助函数：获取所有图片并标记案例 ---
+# --- 4. 核心功能函数 ---
 @st.cache_data
 def load_all_image_data(img_dir, cases):
     all_data = []
@@ -94,10 +144,10 @@ def load_all_image_data(img_dir, cases):
         if os.path.exists(path):
             imgs = [f for f in os.listdir(path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
             for img in imgs:
-                all_data.append((c, img)) # 存储为 (案例名, 文件名)
+                all_data.append((c, img))
     return all_data
 
-# --- 5. 状态管理 ---
+# --- 5. 状态管理初始化 ---
 if 'lang' not in st.session_state: st.session_state.lang = "English"
 if 'step' not in st.session_state: st.session_state.step = "onboarding"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
@@ -109,32 +159,39 @@ if 'question_pool' not in st.session_state:
     random.shuffle(pool)
     st.session_state.question_pool = pool
 
-# --- 6. 流程逻辑 ---
+# --- 6. 页面逻辑流 ---
 
+# Onboarding Page
 if st.session_state.step == "onboarding":
-    st.session_state.lang = st.radio("Language", ["English", "中文", "Italiano"], horizontal=True)
+    st.session_state.lang = st.radio("Language / 语言 / Lingua", ["English", "中文", "Italiano"], horizontal=True)
     T = LANG_DICT[st.session_state.lang] 
     st.title(f"🏙️ {T['title']}")
-    st.markdown(f"**{T['intro']}**\n\n**{T['instr_title']}**\n* {T['instr_1']}\n* {T['instr_2']}\n* {T['instr_3']}")
+    st.markdown(f"**{T['intro']}**")
+    st.markdown(f"**{T['instr_title']}**\n* {T['instr_1']}\n* {T['instr_2']}\n* {T['instr_3']}")
     st.divider()
     st.subheader(T['role_title'])
     c1, c2 = st.columns(2)
     with c1:
-        if st.button(T['role_res']): st.session_state.user_type, st.session_state.step = "Resident", "voting"; st.rerun()
+        if st.button(T['role_res']): 
+            st.session_state.user_type, st.session_state.step = "Resident", "voting"
+            st.rerun()
     with c2:
-        if st.button(T['role_tour']): st.session_state.user_type, st.session_state.step = "Tourist", "voting"; st.rerun()
+        if st.button(T['role_tour']): 
+            st.session_state.user_type, st.session_state.step = "Tourist", "voting"
+            st.rerun()
 
+# Voting Interface
 elif st.session_state.step == "voting":
     T = LANG_DICT[st.session_state.lang]
     all_img_data = load_all_image_data(IMG_DIR, CASES)
     
+    # 进度条
     percent = int((st.session_state.vote_count / TARGET_VOTES) * 100)
     st.markdown(f'''<div class="progress-container"><div class="progress-bar" style="width: {percent}%;"></div><div class="progress-text">{st.session_state.vote_count} / {TARGET_VOTES}</div></div>''', unsafe_allow_html=True)
 
-    # 全随机抽取 2 张图（允许案例相同）
+    # 全随机抽取配对
     if 'pair' not in st.session_state:
         selected_pair = random.sample(all_img_data, 2)
-        # 结构：(case_l, img_l, case_r, img_r)
         st.session_state.pair = (selected_pair[0][0], selected_pair[0][1], selected_pair[1][0], selected_pair[1][1])
     
     case_l, img_l, case_r, img_r = st.session_state.pair
@@ -143,37 +200,78 @@ elif st.session_state.step == "voting":
 
     st.markdown(f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>', unsafe_allow_html=True)
 
+    # 图片展示与选择
     col1, col2 = st.columns(2)
     with col1:
         st.image(os.path.join(IMG_DIR, case_l, img_l), use_container_width=True)
+        st.markdown('<div class="select-btn">', unsafe_allow_html=True)
         if st.button(T['btn_select'], key="L"):
-            st.session_state.temp_votes.append({"left_img": f"{case_l}/{img_l}", "right_img": f"{case_r}/{img_r}", "winner": "left", "category": cat_eng, "case_l": case_l, "case_r": case_r})
-            st.session_state.vote_count += 1; del st.session_state.pair; st.session_state.step = "end" if st.session_state.vote_count >= TARGET_VOTES else "voting"; st.rerun()
+            st.session_state.temp_votes.append({
+                "left_img": f"{case_l}/{img_l}", "right_img": f"{case_r}/{img_r}", 
+                "winner": "left", "category": cat_eng, "case_l": case_l, "case_r": case_r
+            })
+            st.session_state.vote_count += 1
+            del st.session_state.pair
+            if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+        
     with col2:
         st.image(os.path.join(IMG_DIR, case_r, img_r), use_container_width=True)
+        st.markdown('<div class="select-btn">', unsafe_allow_html=True)
         if st.button(T['btn_select'], key="R"):
-            st.session_state.temp_votes.append({"left_img": f"{case_l}/{img_l}", "right_img": f"{case_r}/{img_r}", "winner": "right", "category": cat_eng, "case_l": case_l, "case_r": case_r})
-            st.session_state.vote_count += 1; del st.session_state.pair; st.session_state.step = "end" if st.session_state.vote_count >= TARGET_VOTES else "voting"; st.rerun()
+            st.session_state.temp_votes.append({
+                "left_img": f"{case_l}/{img_l}", "right_img": f"{case_r}/{img_r}", 
+                "winner": "right", "category": cat_eng, "case_l": case_l, "case_r": case_r
+            })
+            st.session_state.vote_count += 1
+            del st.session_state.pair
+            if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
+    # 功能按钮区
     st.write("")
-    b1, b2 = st.columns(2)
+    b1, b2 = st.columns([1, 1])
     with b1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
         if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
-            last = st.session_state.temp_votes.pop(); st.session_state.pair = (last["case_l"], last["left_img"].split('/')[-1], last["case_r"], last["right_img"].split('/')[-1]); st.session_state.vote_count -= 1; st.rerun()
+            last = st.session_state.temp_votes.pop()
+            st.session_state.pair = (last["case_l"], last["left_img"].split('/')[-1], last["case_r"], last["right_img"].split('/')[-1])
+            st.session_state.vote_count -= 1
+            st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     with b2:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
-        if st.button(T['btn_skip']): del st.session_state.pair; st.rerun()
+        if st.button(T['btn_skip']):
+            del st.session_state.pair
+            st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+# Thank You Page
 elif st.session_state.step == "end":
     T = LANG_DICT[st.session_state.lang]
-    st.balloons(); final_df = pd.DataFrame(st.session_state.temp_votes); final_df["user_type"], final_df["lang"] = st.session_state.user_type, st.session_state.lang
+    st.balloons()
+    st.title(f"🎉 {T['end_title']}")
+    st.markdown(f"#### {T['thank_you']}")
+    st.divider()
+
+    # 整合数据并同步
+    final_df = pd.DataFrame(st.session_state.temp_votes)
+    final_df["user_type"] = st.session_state.user_type
+    final_df["lang"] = st.session_state.lang
+    final_df["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
         existing_data = conn.read(worksheet="Sheet1", ttl=0)
-        conn.update(worksheet="Sheet1", data=pd.concat([existing_data, final_df], ignore_index=True))
+        updated_df = pd.concat([existing_data, final_df], ignore_index=True)
+        conn.update(worksheet="Sheet1", data=updated_df)
         st.success(T['success'])
-    except: st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
-    if st.button(T['restart']): st.session_state.clear(); st.rerun()
+    except Exception as e:
+        st.error("Network sync issue. Please download backup.")
+        st.download_button("📥 Download CSV Backup", final_df.to_csv(index=False), "survey_data.csv")
+    
+    if st.button(f"🔄 {T['restart']}"):
+        st.session_state.clear()
+        st.rerun()
