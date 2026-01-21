@@ -69,7 +69,7 @@ if 'question_pool' not in st.session_state:
 
 # STEP 1: Introduction & Role Selection
 if st.session_state.step == "onboarding":
-    st.title("🏙️ Urban Perception Study")
+    st.title("🏙️ Subjective Perception of Historic Centre Street Images")
     st.markdown("""
     Welcome! This research investigates how historic centres are perceived by different people. 
     Your input will help us better understand human-scale urban design.
@@ -159,5 +159,6 @@ elif st.session_state.step == "end":
         st.download_button("Download CSV Backup", final_df.to_csv(index=False), "survey_data.csv")
     
     if st.button("Restart"): st.session_state.clear(); st.rerun()
+
 
 
