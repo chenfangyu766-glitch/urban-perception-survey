@@ -10,9 +10,9 @@ IMG_DIR = "images"
 TARGET_VOTES = 30 
 CASES = ["CaseA", "CaseB", "CaseC", "CaseD"] 
 
-st.set_page_config(page_title="Subjective Perception of Historic Centre Street Images", page_icon="🏙️", layout="centered")
+st.set_page_config(page_title="Urban Perception Study - UNIBO", page_icon="🏙️", layout="centered")
 
-# --- 2. 极致排版 CSS ---
+# --- 2. CSS CUSTOMIZATION ---
 st.markdown("""
     <style>
     header {visibility: hidden !important; height: 0px !important;}
@@ -23,65 +23,64 @@ st.markdown("""
     .progress-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 18px; font-weight: bold; }
     .question-text { font-size: 1.4rem !important; font-weight: 400; text-align: left !important; margin: 10px 0px !important; color: #1E1E1E; }
     .keyword { font-weight: 700; color: #000; } 
+    .privacy-box { background-color: #f9f9f9; padding: 15px; border-radius: 10px; border-left: 5px solid #0056b3; font-size: 0.9rem; margin-bottom: 10px; }
     @media (max-width: 640px) {
         .stImage img { max-height: 28vh !important; object-fit: cover; border-radius: 10px; }
-        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; gap: 10px !important; }
-        div[data-testid="stHorizontalBlock"]:has(div.bottom-btns) > div { width: auto !important; min-width: 85px !important; flex: none !important; }
-        .bottom-btns button { height: 2.2rem !important; font-size: 0.85rem !important; background-color: #f8f9fa !important; color: #666 !important; border: 1px solid #ddd !important; padding: 0 10px !important; }
-        .select-btn button { height: 3.2em !important; font-weight: bold !important; border: 2px solid #000 !important; }
+        .bottom-btns button { height: 2.2rem !important; font-size: 0.85rem !important; }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 翻译字典 ---
+# --- 3. MULTILINGUAL DICTIONARY (INCLUDING PRIVACY) ---
+# Content derived from UNIBO Ethics Committee form [cite: 23, 121, 128, 134]
 LANG_DICT = {
     "English": {
-        "title": "Subjective Perception of Historic Centre Street Images",
-        "intro": "Welcome! This research investigates how historic centres are perceived. Your input helps calibrate our models.",
-        "instr_title": "Instructions:",
-        "instr_1": "You will be shown **30 pairs** of street-view images.",
-        "instr_2": "Select the one that best fits the description.",
-        "instr_3": "It takes about **5 minutes**.",
+        "title": "Perception of Historic Centres Study",
+        "intro": "Welcome! This research investigates how historic centres are perceived by residents and tourists.",
+        "privacy_title": "Legal Information & Consent",
+        "privacy_body": """
+            - **Purpose**: Academic research for a PhD thesis at the University of Bologna[cite: 7, 242].
+            - **Anonymity**: The survey is natively anonymous. No IP addresses or identifying info are recorded.
+            - **Data**: Data is stored securely on UNIBO Microsoft OneDrive servers.
+            - **Voluntary**: You can withdraw at any time. Participants must be 18+ years old[cite: 121, 250].
+        """,
+        "privacy_agree": "I am 18+, I have read the information and I consent to participate.",
         "role_title": "Please identify your role:",
         "role_res": "Resident", "role_tour": "Tourist",
         "q_pre": "Which street looks more ", "q_post": "?",
-        "btn_back": "⬅️ Back", "btn_skip": "Skip ⏩", "btn_select": "Select Above",
-        "success": "✅ Data synced!", 
-        "end_title": "Completed", 
-        "thank_you": "Thank you for your time!",
-        "restart": "Restart"
-    },
-    "中文": {
-        "title": "历史中心街景主观感知研究",
-        "intro": "欢迎！本项研究旨在调查人们对历史中心的感知。您的参与将帮助我们校准模型。",
-        "instr_title": "指南：",
-        "instr_1": "您将看到 **30 对** 街景图像。",
-        "instr_2": "请选择最符合描述的一张。",
-        "instr_3": "完成约需 **5 分钟**。",
-        "role_title": "请选择您的角色：",
-        "role_res": "当地居民", "role_tour": "游客",
-        "q_pre": "哪条街道看起来更", "q_post": "？",
-        "btn_back": "⬅️ 返回", "btn_skip": "跳过 ⏩", "btn_select": "选择上方图片",
-        "success": "✅ 数据已同步！", 
-        "end_title": "问卷已完成", 
-        "thank_you": "感谢您的参与！",
-        "restart": "重新开始"
+        "btn_select": "Select Above", "success": "✅ Data synced!", "thank_you": "Thank you for your time!"
     },
     "Italiano": {
-        "title": "Percezione Soggettiva delle Immagini Stradali del Centro Storico",
-        "intro": "Benvenuti! Questa ricerca indaga la percezione dei centri storici. Il vostro contributo aiuta a calibrare i nostri modelli.",
-        "instr_title": "Istruzioni:",
-        "instr_1": "Vi verranno mostrate **30 coppie** di immagini.",
-        "instr_2": "Selezionate quella che meglio si adatta alla descrizione.",
-        "instr_3": "Richiede circa **5 minuti**.",
+        "title": "Percezione dei Centri Storici",
+        "intro": "Benvenuti! Questa ricerca indaga la percezione dei centri storici italiani tramite immagini di Street View[cite: 23, 117].",
+        "privacy_title": "Informativa e Consenso Informato",
+        "privacy_body": """
+            - **Scopo**: Ricerca accademica per tesi di dottorato presso l'Alma Mater Studiorum[cite: 7, 242].
+            - **Anonimato**: La raccolta è nativamente anonima. Nessun dato identificativo registrato.
+            - **Sicurezza**: Dati archiviati in modo sicuro su server OneDrive dell'Ateneo.
+            - **Consenso**: Partecipazione volontaria riservata a soggetti maggiorenni (18+)[cite: 121, 250].
+        """,
+        "privacy_agree": "Dichiaro di essere maggiorenne, ho letto l'informativa e acconsento.",
         "role_title": "Seleziona il tuo ruolo:",
         "role_res": "Residente", "role_tour": "Turista",
         "q_pre": "Quale strada sembra più ", "q_post": "?",
-        "btn_back": "⬅️ Indietro", "btn_skip": "Salta ⏩", "btn_select": "Seleziona sopra",
-        "success": "✅ Dati sincronizzati!", 
-        "end_title": "Completato", 
-        "thank_you": "Grazie per il tuo tempo!",
-        "restart": "Ricomincia"
+        "btn_select": "Seleziona sopra", "success": "✅ Dati sincronizzati!", "thank_you": "Grazie per il tuo tempo!"
+    },
+    "中文": {
+        "title": "历史中心街景感知研究",
+        "intro": "欢迎！本研究由博洛尼亚大学开展，旨在调查居民与游客对历史中心的感知差异 [cite: 23, 100]。",
+        "privacy_title": "法律信息与知情同意",
+        "privacy_body": """
+            - **研究目的**: 博洛尼亚大学博士论文科研项目 [cite: 7, 242]。
+            - **匿名性**: 本次调研为原生匿名，系统不会记录您的IP地址或个人信息 。
+            - **数据存储**: 数据安全存储于博洛尼亚大学官方微软 OneDrive 服务器 。
+            - **参与原则**: 参与完全自愿，可随时退出。参与者须年满18周岁 [cite: 121, 250]。
+        """,
+        "privacy_agree": "我已年满18周岁，阅读并同意上述隐私条款。",
+        "role_title": "请选择您的身份：",
+        "role_res": "当地居民", "role_tour": "游客",
+        "q_pre": "哪条街道看起来更", "q_post": "？",
+        "btn_select": "选择上方图片", "success": "✅ 数据已同步！", "thank_you": "感谢您的参与！"
     }
 }
 
@@ -91,7 +90,7 @@ CAT_TRANS = {
     "Italiano": {"Safe": "sicura", "Lively": "vivace", "Wealthy": "benestante", "Beautiful": "bella", "Boring": "noiosa", "Depressing": "deprimente"}
 }
 
-# --- 4. 核心功能 ---
+# --- 4. CORE FUNCTIONS ---
 @st.cache_data
 def load_all_image_data(img_dir, cases):
     all_data = []
@@ -102,8 +101,8 @@ def load_all_image_data(img_dir, cases):
             for img in imgs: all_data.append((c, img))
     return all_data
 
-# --- 5. 状态管理 ---
-if 'lang' not in st.session_state: st.session_state.lang = "English"
+# --- 5. SESSION STATE ---
+if 'lang' not in st.session_state: st.session_state.lang = "Italiano"
 if 'step' not in st.session_state: st.session_state.step = "onboarding"
 if 'vote_count' not in st.session_state: st.session_state.vote_count = 0
 if 'temp_votes' not in st.session_state: st.session_state.temp_votes = []
@@ -113,19 +112,26 @@ if 'question_pool' not in st.session_state:
     random.shuffle(pool)
     st.session_state.question_pool = pool
 
-# --- 6. 逻辑流 ---
+# --- 6. PAGE LOGIC ---
 if st.session_state.step == "onboarding":
-    st.session_state.lang = st.radio("Language", ["English", "中文", "Italiano"], horizontal=True)
+    st.session_state.lang = st.radio("Language / Lingua / 语言", ["English", "Italiano", "中文"], horizontal=True)
     T = LANG_DICT[st.session_state.lang] 
     st.title(f"🏙️ {T['title']}")
-    st.markdown(f"{T['intro']}\n\n**{T['instr_title']}**\n* {T['instr_1']}\n* {T['instr_2']}\n* {T['instr_3']}")
+    st.markdown(f"**{T['intro']}**")
+    
+    # Privacy Box [cite: 130, 131]
+    st.markdown(f'<div class="privacy-box"><b>{T["privacy_title"]}</b><br>{T["privacy_body"]}</div>', unsafe_allow_html=True)
+    agree = st.checkbox(T['privacy_agree'])
+    
     st.divider()
     st.subheader(T['role_title'])
     c1, c2 = st.columns(2)
     with c1:
-        if st.button(T['role_res']): st.session_state.user_type, st.session_state.step = "Resident", "voting"; st.rerun()
+        if st.button(T['role_res'], disabled=not agree): 
+            st.session_state.user_type, st.session_state.step = "Resident", "voting"; st.rerun()
     with c2:
-        if st.button(T['role_tour']): st.session_state.user_type, st.session_state.step = "Tourist", "voting"; st.rerun()
+        if st.button(T['role_tour'], disabled=not agree): 
+            st.session_state.user_type, st.session_state.step = "Tourist", "voting"; st.rerun()
 
 elif st.session_state.step == "voting":
     T = LANG_DICT[st.session_state.lang]
@@ -158,18 +164,6 @@ elif st.session_state.step == "voting":
             if st.session_state.vote_count >= TARGET_VOTES: st.session_state.step = "end"
             st.rerun()
 
-    st.write("")
-    b1, b2 = st.columns(2)
-    with b1:
-        st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
-        if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
-            last = st.session_state.temp_votes.pop(); st.session_state.pair = (last["case_l"], last["left_img"].split('/')[-1], last["case_r"], last["right_img"].split('/')[-1]); st.session_state.vote_count -= 1; st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    with b2:
-        st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
-        if st.button(T['btn_skip']): del st.session_state.pair; st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
 elif st.session_state.step == "end":
     T = LANG_DICT[st.session_state.lang]
     st.balloons()
@@ -187,9 +181,8 @@ elif st.session_state.step == "end":
         conn.update(worksheet="Sheet1", data=pd.concat([existing_data, final_df], ignore_index=True))
         st.success(T['success'])
     except:
-        st.error("Sync Error")
-        st.download_button("Download CSV", final_df.to_csv(index=False), "backup.csv")
+        st.download_button("Download CSV Backup", final_df.to_csv(index=False), "backup.csv")
     
-    if st.button(T['restart']): st.session_state.clear(); st.rerun()
+    if st.button("Restart / Riprova / 重新开始"): st.session_state.clear(); st.rerun()
 
 
