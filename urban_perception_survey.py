@@ -3,13 +3,15 @@ import pandas as pd
 import os
 import random
 import uuid
+import gspread
 from datetime import datetime
-from streamlit_gsheets import GSheetsConnection
+from google.oauth2.service_account import Credentials
 
 # --- 1. RESEARCH CONFIGURATION ---
 IMG_DIR = "images"
 TARGET_VOTES = 30
 CASES = ["CaseA", "CaseB", "CaseC", "CaseD"]
+EVENT_WORKSHEET_NAME = "Events"
 
 st.set_page_config(
     page_title="Subjective Perception of Historic Centre Street Images",
@@ -69,13 +71,14 @@ LANG_DICT = {
         "instr_1": "You will be shown **30 pairs** of street-view images.",
         "instr_2": "Select the one that best fits the description.",
         "instr_3": "It takes about **5 minutes**.",
-        "instr_4": "If you cannot decide, or if the two images look equally safe, lively, boring, etc., please use **Skip**.",
+        "instr_4": "If the two images look equally suitable, please use **Skip**.",
 
         "gender_title": "Please select your gender:",
         "gender_placeholder": "Please select",
         "gender_options": {
             "Male": "Male",
-            "Female": "Female"
+            "Female": "Female",
+            "Prefer not to say": "Prefer not to say"
         },
 
         "age_title": "Please select your age group:",
@@ -129,13 +132,14 @@ LANG_DICT = {
         "instr_1": "您将看到 **30 对** 街景图像。",
         "instr_2": "请选择最符合描述的一张。",
         "instr_3": "完成约需 **5 分钟**。",
-        "instr_4": "如果您无法判断，或认为两张图片在安全、活跃、乏味等方面差异不明显，请点击 **跳过**。",
+        "instr_4": "如果两张图片看起来差不多，请点击 **跳过**。",
 
         "gender_title": "请选择您的性别：",
         "gender_placeholder": "请选择",
         "gender_options": {
             "Male": "男性",
-            "Female": "女性"
+            "Female": "女性",
+            "Prefer not to say": "不愿透露"
         },
 
         "age_title": "请选择您的年龄组：",
@@ -189,13 +193,14 @@ LANG_DICT = {
         "instr_1": "Vi verranno mostrate **30 coppie** di immagini.",
         "instr_2": "Selezionate quella che meglio si adatta alla descrizione.",
         "instr_3": "Richiede circa **5 minuti**.",
-        "instr_4": "Se non riuscite a decidere, o se le due immagini sembrano ugualmente sicure, vivaci, noiose, ecc., usate **Salta**.",
+        "instr_4": "Se le due immagini sembrano ugualmente adatte, usate **Salta**.",
 
         "gender_title": "Seleziona il tuo genere:",
         "gender_placeholder": "Seleziona",
         "gender_options": {
             "Male": "Maschio",
-            "Female": "Femmina"
+            "Female": "Femmina",
+            "Prefer not to say": "Preferisco non dichiararlo"
         },
 
         "age_title": "Seleziona la tua fascia d'età:",
@@ -250,7 +255,38 @@ CAT_TRANS = {
     }
 }
 
-# --- 4. 核心功能 ---
+# --- 4. Google Sheet event log columns ---
+EVENT_COLUMNS = [
+    "event_id",
+    "participant_id",
+    "event_seq",
+    "event_type",
+    "timestamp",
+    "lang",
+    "gender",
+    "age_group",
+    "user_type",
+    "question_number",
+    "response_index",
+    "vote_count",
+    "skip_count",
+    "completed",
+    "category",
+    "left_img",
+    "right_img",
+    "winner",
+    "case_l",
+    "case_r",
+    "removed_response_index",
+    "removed_category",
+    "removed_left_img",
+    "removed_right_img",
+    "removed_winner",
+    "removed_case_l",
+    "removed_case_r"
+]
+
+# --- 5. 核心功能 ---
 @st.cache_data
 def load_all_image_data(img_dir, cases):
     all_data = []
@@ -259,14 +295,43 @@ def load_all_image_data(img_dir, cases):
         if os.path.exists(path):
             imgs = [
                 f for f in os.listdir(path)
-                if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+                if f.lower().endswith((".jpg", ".jpeg", ".png"))
             ]
             for img in imgs:
                 all_data.append((c, img))
     return all_data
 
 
-# --- 5. 弹窗对话框函数 ---
+def image_key(item):
+    return f"{item[0]}/{item[1]}"
+
+
+def get_new_pair(all_img_data):
+    """
+    尽量避免同一个受访者重复看到同一张图片。
+    如果未使用图片不足 2 张，则自动回退到全图库随机抽取。
+    """
+    used = set(st.session_state.used_images)
+
+    candidates = [
+        item for item in all_img_data
+        if image_key(item) not in used
+    ]
+
+    if len(candidates) >= 2:
+        pair = random.sample(candidates, 2)
+    else:
+        pair = random.sample(all_img_data, 2)
+
+    st.session_state.used_images.extend([
+        image_key(pair[0]),
+        image_key(pair[1])
+    ])
+
+    return pair
+
+
+# --- 6. 弹窗对话框函数 ---
 @st.dialog("Information Sheet / Informativa")
 def show_privacy_modal(content):
     st.markdown(content)
@@ -274,87 +339,274 @@ def show_privacy_modal(content):
         st.rerun()
 
 
-# --- 6. 快照式保存函数 ---
-def build_current_votes_df(completed=False):
+# --- 7. Google Sheets append-only event log ---
+@st.cache_resource
+def get_events_worksheet():
     """
-    将当前受访者的有效答案整理成 DataFrame。
-    每次保存的是当前 temp_votes 的完整快照。
+    使用 Google Sheets API 的 append_rows。
+    这比每次读取整个 Sheet 再 update 更适合多人同时填写。
     """
-    current_df = pd.DataFrame(st.session_state.temp_votes)
+    config = dict(st.secrets["connections"]["gsheets"])
 
-    if current_df.empty:
-        return current_df
+    spreadsheet_value = (
+        config.get("spreadsheet")
+        or config.get("spreadsheet_url")
+        or config.get("url")
+    )
 
-    current_df.insert(0, "participant_id", st.session_state.participant_id)
-    current_df.insert(1, "response_index", range(1, len(current_df) + 1))
+    credential_keys = [
+        "type",
+        "project_id",
+        "private_key_id",
+        "private_key",
+        "client_email",
+        "client_id",
+        "auth_uri",
+        "token_uri",
+        "auth_provider_x509_cert_url",
+        "client_x509_cert_url",
+        "universe_domain"
+    ]
 
-    current_df["gender"] = st.session_state.get("gender", "")
-    current_df["age_group"] = st.session_state.get("age_group", "")
-    current_df["user_type"] = st.session_state.get("user_type", "")
-    current_df["lang"] = st.session_state.get("lang", "")
-    current_df["completed"] = completed
-    current_df["vote_count"] = len(current_df)
-    current_df["last_synced_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    creds_info = {
+        k: config[k]
+        for k in credential_keys
+        if k in config
+    }
 
-    return current_df
+    if "private_key" in creds_info:
+        creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
 
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
 
-def sync_current_votes(completed=False):
-    """
-    覆盖式同步当前受访者的数据。
-    逻辑：
-    1. 读取 Google Sheet 现有数据；
-    2. 删除同一个 participant_id 的旧记录；
-    3. 写入当前 temp_votes 的最新快照。
-    """
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet="Sheet1", ttl=0)
+    credentials = Credentials.from_service_account_info(
+        creds_info,
+        scopes=scopes
+    )
 
-    if existing_data is None:
-        existing_data = pd.DataFrame()
+    client = gspread.authorize(credentials)
 
-    existing_data = existing_data.copy()
-
-    # 删除当前受访者旧记录，避免返回重选造成重复
-    if "participant_id" in existing_data.columns:
-        existing_data = existing_data[
-            existing_data["participant_id"].astype(str) != str(st.session_state.participant_id)
-        ]
-
-    current_df = build_current_votes_df(completed=completed)
-
-    if current_df.empty:
-        updated_data = existing_data
+    if spreadsheet_value.startswith("http"):
+        spreadsheet = client.open_by_url(spreadsheet_value)
     else:
-        updated_data = pd.concat([existing_data, current_df], ignore_index=True)
+        try:
+            spreadsheet = client.open_by_key(spreadsheet_value)
+        except Exception:
+            spreadsheet = client.open(spreadsheet_value)
 
-    conn.update(worksheet="Sheet1", data=updated_data)
+    try:
+        worksheet = spreadsheet.worksheet(EVENT_WORKSHEET_NAME)
+    except gspread.WorksheetNotFound:
+        worksheet = spreadsheet.add_worksheet(
+            title=EVENT_WORKSHEET_NAME,
+            rows=1000,
+            cols=len(EVENT_COLUMNS)
+        )
+        worksheet.append_row(EVENT_COLUMNS)
+
+    header = worksheet.row_values(1)
+    if not header:
+        worksheet.append_row(EVENT_COLUMNS)
+
+    return worksheet
 
 
-# --- 7. 状态管理 ---
-if 'lang' not in st.session_state:
+def make_event(
+    event_type,
+    category="",
+    left_img="",
+    right_img="",
+    winner="",
+    case_l="",
+    case_r="",
+    response_index="",
+    question_number="",
+    completed=False,
+    removed_vote=None
+):
+    """
+    生成一条事件记录。
+    event_type 可以是：
+    start / vote / skip / back
+    """
+    st.session_state.event_seq += 1
+
+    event = {
+        "event_id": str(uuid.uuid4()),
+        "participant_id": st.session_state.participant_id,
+        "event_seq": st.session_state.event_seq,
+        "event_type": event_type,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "lang": st.session_state.get("lang", ""),
+        "gender": st.session_state.get("gender", ""),
+        "age_group": st.session_state.get("age_group", ""),
+        "user_type": st.session_state.get("user_type", ""),
+        "question_number": question_number,
+        "response_index": response_index,
+        "vote_count": st.session_state.get("vote_count", 0),
+        "skip_count": st.session_state.get("skip_count", 0),
+        "completed": completed,
+        "category": category,
+        "left_img": left_img,
+        "right_img": right_img,
+        "winner": winner,
+        "case_l": case_l,
+        "case_r": case_r,
+        "removed_response_index": "",
+        "removed_category": "",
+        "removed_left_img": "",
+        "removed_right_img": "",
+        "removed_winner": "",
+        "removed_case_l": "",
+        "removed_case_r": ""
+    }
+
+    if removed_vote is not None:
+        event["removed_response_index"] = removed_vote.get("response_index", "")
+        event["removed_category"] = removed_vote.get("category", "")
+        event["removed_left_img"] = removed_vote.get("left_img", "")
+        event["removed_right_img"] = removed_vote.get("right_img", "")
+        event["removed_winner"] = removed_vote.get("winner", "")
+        event["removed_case_l"] = removed_vote.get("case_l", "")
+        event["removed_case_r"] = removed_vote.get("case_r", "")
+
+    return event
+
+
+def append_events(events):
+    """
+    append-only 写入 Google Sheet。
+    不删除旧记录，避免多人同时填写时互相覆盖。
+    """
+    if not events:
+        return
+
+    worksheet = get_events_worksheet()
+    rows = [
+        [event.get(col, "") for col in EVENT_COLUMNS]
+        for event in events
+    ]
+    worksheet.append_rows(rows, value_input_option="USER_ENTERED")
+
+
+def safe_log_event(event):
+    """
+    如果网络或 Google Sheet 临时失败，先把事件留在 session_state.pending_events。
+    下一次操作时会再次尝试同步。
+    """
+    st.session_state.pending_events.append(event)
+
+    try:
+        append_events(st.session_state.pending_events)
+        st.session_state.pending_events = []
+        st.session_state.sync_error = ""
+    except Exception as e:
+        st.session_state.sync_error = str(e)
+
+
+def build_backup_votes_df():
+    """
+    用于同步失败时让受访者下载当前答案备份。
+    """
+    df = pd.DataFrame(st.session_state.temp_votes)
+
+    if df.empty:
+        return df
+
+    df.insert(0, "participant_id", st.session_state.participant_id)
+    df["gender"] = st.session_state.get("gender", "")
+    df["age_group"] = st.session_state.get("age_group", "")
+    df["user_type"] = st.session_state.get("user_type", "")
+    df["lang"] = st.session_state.get("lang", "")
+    df["vote_count"] = st.session_state.get("vote_count", 0)
+    df["skip_count"] = st.session_state.get("skip_count", 0)
+    df["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    return df
+
+
+def record_vote(winner, cl, il, cr, ir, cat_eng):
+    response_index = st.session_state.vote_count + 1
+
+    vote = {
+        "response_index": response_index,
+        "left_img": f"{cl}/{il}",
+        "right_img": f"{cr}/{ir}",
+        "winner": winner,
+        "category": cat_eng,
+        "case_l": cl,
+        "case_r": cr
+    }
+
+    st.session_state.temp_votes.append(vote)
+    st.session_state.vote_count += 1
+
+    completed_now = st.session_state.vote_count >= TARGET_VOTES
+
+    event = make_event(
+        event_type="vote",
+        category=cat_eng,
+        left_img=f"{cl}/{il}",
+        right_img=f"{cr}/{ir}",
+        winner=winner,
+        case_l=cl,
+        case_r=cr,
+        response_index=response_index,
+        question_number=response_index,
+        completed=completed_now
+    )
+
+    safe_log_event(event)
+
+    if "pair" in st.session_state:
+        del st.session_state.pair
+
+    if completed_now:
+        st.session_state.step = "end"
+
+
+# --- 8. 状态管理 ---
+if "lang" not in st.session_state:
     st.session_state.lang = "English"
 
-if 'step' not in st.session_state:
+if "step" not in st.session_state:
     st.session_state.step = "onboarding"
 
-if 'vote_count' not in st.session_state:
+if "vote_count" not in st.session_state:
     st.session_state.vote_count = 0
 
-if 'temp_votes' not in st.session_state:
+if "skip_count" not in st.session_state:
+    st.session_state.skip_count = 0
+
+if "temp_votes" not in st.session_state:
     st.session_state.temp_votes = []
 
-if 'participant_id' not in st.session_state:
+if "pending_events" not in st.session_state:
+    st.session_state.pending_events = []
+
+if "sync_error" not in st.session_state:
+    st.session_state.sync_error = ""
+
+if "participant_id" not in st.session_state:
     st.session_state.participant_id = str(uuid.uuid4())
 
-if 'question_pool' not in st.session_state:
+if "event_seq" not in st.session_state:
+    st.session_state.event_seq = 0
+
+if "used_images" not in st.session_state:
+    st.session_state.used_images = []
+
+if "question_pool" not in st.session_state:
     cats = list(CAT_TRANS["English"].keys())
     pool = cats * 5
     random.shuffle(pool)
     st.session_state.question_pool = pool
 
 
-# --- 8. 逻辑流 ---
+# --- 9. 逻辑流 ---
 if st.session_state.step == "onboarding":
     st.session_state.lang = st.radio(
         "Language",
@@ -378,16 +630,16 @@ if st.session_state.step == "onboarding":
     st.divider()
 
     # 弹窗按钮
-    if st.button(T['privacy_btn']):
-        show_privacy_modal(T['privacy_content'])
+    if st.button(T["privacy_btn"]):
+        show_privacy_modal(T["privacy_content"])
 
     # 同意勾选
-    agree = st.checkbox(T['privacy_agree'])
+    agree = st.checkbox(T["privacy_agree"])
 
     # 性别
     gender = st.selectbox(
         T["gender_title"],
-        options=["", "Male", "Female"],
+        options=["", "Male", "Female", "Prefer not to say"],
         format_func=lambda x: T["gender_placeholder"] if x == "" else T["gender_options"][x],
         key="gender_input"
     )
@@ -402,32 +654,43 @@ if st.session_state.step == "onboarding":
 
     basic_info_completed = agree and gender != "" and age_group != ""
 
-    st.subheader(T['role_title'])
+    st.subheader(T["role_title"])
 
     c1, c2 = st.columns(2)
 
     with c1:
-        if st.button(T['role_res'], disabled=not basic_info_completed):
+        if st.button(T["role_res"], disabled=not basic_info_completed):
             st.session_state.gender = gender
             st.session_state.age_group = age_group
             st.session_state.user_type = "Resident"
             st.session_state.step = "voting"
+
+            start_event = make_event(event_type="start")
+            safe_log_event(start_event)
+
             st.rerun()
 
     with c2:
-        if st.button(T['role_tour'], disabled=not basic_info_completed):
+        if st.button(T["role_tour"], disabled=not basic_info_completed):
             st.session_state.gender = gender
             st.session_state.age_group = age_group
             st.session_state.user_type = "Tourist"
             st.session_state.step = "voting"
+
+            start_event = make_event(event_type="start")
+            safe_log_event(start_event)
+
             st.rerun()
 
 
 elif st.session_state.step == "voting":
-    # --- 完全保留原始投票页面布局 ---
     T = LANG_DICT[st.session_state.lang]
 
     all_img_data = load_all_image_data(IMG_DIR, CASES)
+
+    if len(all_img_data) < 2:
+        st.error("Not enough images found. Please check the images folder.")
+        st.stop()
 
     percent = int((st.session_state.vote_count / TARGET_VOTES) * 100)
     st.markdown(
@@ -440,8 +703,8 @@ elif st.session_state.step == "voting":
         unsafe_allow_html=True
     )
 
-    if 'pair' not in st.session_state:
-        pair = random.sample(all_img_data, 2)
+    if "pair" not in st.session_state:
+        pair = get_new_pair(all_img_data)
         st.session_state.pair = (
             pair[0][0],
             pair[0][1],
@@ -464,57 +727,29 @@ elif st.session_state.step == "voting":
     with col1:
         st.image(os.path.join(IMG_DIR, cl, il), use_container_width=True)
 
-        if st.button(T['btn_select'], key="L"):
-            st.session_state.temp_votes.append({
-                "left_img": f"{cl}/{il}",
-                "right_img": f"{cr}/{ir}",
-                "winner": "left",
-                "category": cat_eng,
-                "case_l": cl,
-                "case_r": cr
-            })
-
-            st.session_state.vote_count += 1
-            del st.session_state.pair
-
-            completed_now = st.session_state.vote_count >= TARGET_VOTES
-
-            try:
-                sync_current_votes(completed=completed_now)
-            except Exception as e:
-                st.session_state["sync_error"] = str(e)
-
-            if completed_now:
-                st.session_state.step = "end"
-
+        if st.button(T["btn_select"], key="L"):
+            record_vote(
+                winner="left",
+                cl=cl,
+                il=il,
+                cr=cr,
+                ir=ir,
+                cat_eng=cat_eng
+            )
             st.rerun()
 
     with col2:
         st.image(os.path.join(IMG_DIR, cr, ir), use_container_width=True)
 
-        if st.button(T['btn_select'], key="R"):
-            st.session_state.temp_votes.append({
-                "left_img": f"{cl}/{il}",
-                "right_img": f"{cr}/{ir}",
-                "winner": "right",
-                "category": cat_eng,
-                "case_l": cl,
-                "case_r": cr
-            })
-
-            st.session_state.vote_count += 1
-            del st.session_state.pair
-
-            completed_now = st.session_state.vote_count >= TARGET_VOTES
-
-            try:
-                sync_current_votes(completed=completed_now)
-            except Exception as e:
-                st.session_state["sync_error"] = str(e)
-
-            if completed_now:
-                st.session_state.step = "end"
-
+        if st.button(T["btn_select"], key="R"):
+            record_vote(
+                winner="right",
+                cl=cl,
+                il=il,
+                cr=cr,
+                ir=ir,
+                cat_eng=cat_eng
+            )
             st.rerun()
 
     st.write("")
@@ -524,60 +759,85 @@ elif st.session_state.step == "voting":
     with b1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
 
-        if st.button(T['btn_back'], disabled=(st.session_state.vote_count == 0)):
-            last = st.session_state.temp_votes.pop()
+        if st.button(T["btn_back"], disabled=(st.session_state.vote_count == 0)):
+            removed_vote = st.session_state.temp_votes.pop()
 
             st.session_state.pair = (
-                last["case_l"],
-                last["left_img"].split('/')[-1],
-                last["case_r"],
-                last["right_img"].split('/')[-1]
+                removed_vote["case_l"],
+                removed_vote["left_img"].split("/")[-1],
+                removed_vote["case_r"],
+                removed_vote["right_img"].split("/")[-1]
             )
 
             st.session_state.vote_count -= 1
 
-            try:
-                sync_current_votes(completed=False)
-            except Exception as e:
-                st.session_state["sync_error"] = str(e)
+            back_event = make_event(
+                event_type="back",
+                question_number=st.session_state.vote_count + 1,
+                completed=False,
+                removed_vote=removed_vote
+            )
+            safe_log_event(back_event)
 
             st.rerun()
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with b2:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
 
-        if st.button(T['btn_skip']):
-            del st.session_state.pair
+        if st.button(T["btn_skip"]):
+            st.session_state.skip_count += 1
+
+            skip_event = make_event(
+                event_type="skip",
+                category=cat_eng,
+                left_img=f"{cl}/{il}",
+                right_img=f"{cr}/{ir}",
+                winner="",
+                case_l=cl,
+                case_r=cr,
+                question_number=st.session_state.vote_count + 1,
+                completed=False
+            )
+            safe_log_event(skip_event)
+
+            if "pair" in st.session_state:
+                del st.session_state.pair
+
             st.rerun()
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 elif st.session_state.step == "end":
-    # --- 结束页 ---
     T = LANG_DICT[st.session_state.lang]
 
     st.balloons()
     st.title(f"🎉 {T['end_title']}")
-    st.subheader(T['thank_you'])
+    st.subheader(T["thank_you"])
     st.divider()
 
-    final_df = build_current_votes_df(completed=True)
+    # 尝试把之前未同步的 pending events 再同步一次
+    if st.session_state.pending_events:
+        try:
+            append_events(st.session_state.pending_events)
+            st.session_state.pending_events = []
+            st.session_state.sync_error = ""
+        except Exception as e:
+            st.session_state.sync_error = str(e)
 
-    try:
-        sync_current_votes(completed=True)
-        st.success(T['success'])
-
-    except Exception as e:
+    if not st.session_state.pending_events:
+        st.success(T["success"])
+    else:
         st.error("Sync Error")
+        backup_df = build_backup_votes_df()
         st.download_button(
             "Download CSV",
-            final_df.to_csv(index=False),
+            backup_df.to_csv(index=False),
             "backup.csv"
         )
 
-    if st.button(T['restart']):
+    if st.button(T["restart"]):
         st.session_state.clear()
         st.rerun()
