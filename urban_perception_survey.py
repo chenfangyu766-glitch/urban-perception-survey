@@ -77,7 +77,7 @@ LANG_DICT = {
         "gender_placeholder": "Please select",
         "gender_options": {
             "Male": "Male",
-            "Female": "Female",
+            "Female": "Female"
         },
 
         "age_title": "Please select your age group:",
@@ -137,7 +137,7 @@ LANG_DICT = {
         "gender_placeholder": "请选择",
         "gender_options": {
             "Male": "男性",
-            "Female": "女性",
+            "Female": "女性"
         },
 
         "age_title": "请选择您的年龄组：",
@@ -197,7 +197,7 @@ LANG_DICT = {
         "gender_placeholder": "Seleziona",
         "gender_options": {
             "Male": "Maschio",
-            "Female": "Femmina",
+            "Female": "Femmina"
         },
 
         "age_title": "Seleziona la tua fascia d'età:",
@@ -476,7 +476,7 @@ def make_event(
 def append_events(events):
     """
     append-only 写入 Google Sheet。
-    不删除旧记录，避免多人同时填写时互相覆盖。
+    使用 RAW，避免 Google Sheet 自动转换时间或数字格式。
     """
     if not events:
         return
@@ -486,7 +486,8 @@ def append_events(events):
         [event.get(col, "") for col in EVENT_COLUMNS]
         for event in events
     ]
-    worksheet.append_rows(rows, value_input_option="USER_ENTERED")
+
+    worksheet.append_rows(rows, value_input_option="RAW")
 
 
 def safe_log_event(event):
@@ -636,7 +637,7 @@ if st.session_state.step == "onboarding":
     # 性别
     gender = st.selectbox(
         T["gender_title"],
-        options=["", "Male", "Female", "Prefer not to say"],
+        options=["", "Male", "Female"],
         format_func=lambda x: T["gender_placeholder"] if x == "" else T["gender_options"][x],
         key="gender_input"
     )
@@ -834,7 +835,9 @@ elif st.session_state.step == "end":
             backup_df.to_csv(index=False),
             "backup.csv"
         )
+        st.warning("Please download the CSV backup before closing this page.")
 
-    if st.button(T["restart"]):
+    # 如果还有未同步事件，则禁用 Restart，避免误清空数据
+    if st.button(T["restart"], disabled=bool(st.session_state.pending_events)):
         st.session_state.clear()
         st.rerun()
