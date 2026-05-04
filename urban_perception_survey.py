@@ -78,7 +78,6 @@ LANG_DICT = {
         "gender_options": {
             "Male": "Male",
             "Female": "Female",
-            "Prefer not to say": "Prefer not to say"
         },
 
         "age_title": "Please select your age group:",
@@ -139,7 +138,6 @@ LANG_DICT = {
         "gender_options": {
             "Male": "男性",
             "Female": "女性",
-            "Prefer not to say": "不愿透露"
         },
 
         "age_title": "请选择您的年龄组：",
@@ -200,7 +198,6 @@ LANG_DICT = {
         "gender_options": {
             "Male": "Maschio",
             "Female": "Femmina",
-            "Prefer not to say": "Preferisco non dichiararlo"
         },
 
         "age_title": "Seleziona la tua fascia d'età:",
