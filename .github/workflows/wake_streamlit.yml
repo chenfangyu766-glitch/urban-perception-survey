@@ -1,1 +1,28 @@
+name: Wake Streamlit survey app
 
+on:
+  schedule:
+    # Run every 3 hours at minute 17. GitHub uses UTC time.
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  wake-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Selenium
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium
+
+      - name: Wake Streamlit app
+        run: python wake_streamlit.py
