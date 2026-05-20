@@ -14,7 +14,7 @@ CASES = ["CaseA", "CaseB", "CaseC", "CaseD"]
 EVENT_WORKSHEET_NAME = "Events"
 
 st.set_page_config(
-    page_title="Subjective Perception of Historic Centre Street Images",
+    page_title="Perception of Historic Centre Street Images",
     page_icon="🏙️",
     layout="centered"
 )
@@ -45,8 +45,13 @@ st.markdown("""
 # --- 3. 翻译字典 ---
 LANG_DICT = {
     "English": {
-        "title": "Subjective Perception of Historic Centre Street Images",
-        "intro": "Welcome! This research investigates how historic centres are perceived. Your input helps calibrate our models.",
+        "title": "Perception of Historic Centre Street Images",
+        "intro": """Welcome! This survey is part of a PhD research project on walkability and street-level perception in Italian historic centres. It explores how residents and tourists perceive streets in the historic centres of Florence, Ravenna, Bologna, and Ferrara.
+
+You will see 30 pairs of street-view images with a perception statement and choose the one that better matches a given perception, such as safe, lively, wealthy, beautiful, boring, or depressing. If both images match the description equally, or if neither image clearly matches it, you may select the corresponding option.
+
+The survey is anonymous and takes about 5 minutes to complete. Your responses will help us better understand subjective perceptions in historic centres.""",
+        "consent_intro": "Before starting, please read the Information Sheet and confirm whether you agree to participate in this anonymous academic survey.",
         "privacy_btn": "📄 View Information Sheet",
         "privacy_content": """
             **1. Project Lead**: Prof. Elisa Conticelli (University of Bologna).
@@ -66,37 +71,26 @@ LANG_DICT = {
             **8. Contacts**: Prof. Elisa Conticelli (elisa.conticelli@unibo.it) and Fangyu Chen (fangyu.chen2@unibo.it).
         """,
         "privacy_agree": "I am 18+, I have read the information and I consent to participate.",
-
-        "instr_title": "Instructions:",
-        "instr_1": "You will be shown **30 pairs** of street-view images.",
-        "instr_2": "Select the one that best fits the description.",
-        "instr_3": "It takes about **5 minutes**.",
-        "instr_4": "If the two images look equally suitable, please use **Skip**.",
-
         "gender_title": "Please select your gender:",
         "gender_placeholder": "Please select",
-        "gender_options": {
-            "Male": "Male",
-            "Female": "Female"
-        },
-
+        "gender_options": {"Male": "Male", "Female": "Female", "Other": "Other"},
         "age_title": "Please select your age group:",
         "age_placeholder": "Please select",
-        "age_options": {
-            "18-29": "18–29",
-            "30-44": "30–44",
-            "45-59": "45–59",
-            "60+": "60 or above"
-        },
-
+        "age_options": {"18-29": "18–29", "30-44": "30–44", "45-59": "45–59", "60+": "60 or above"},
         "role_title": "Please identify your role:",
-        "role_res": "Resident",
-        "role_tour": "Tourist",
-
-        "q_pre": "Which street looks more ",
-        "q_post": "?",
+        "role_placeholder": "Please select",
+        "role_options": {"City resident": "City resident", "City user": "City user", "Current tourist": "Current tourist", "Previous tourist": "Previous tourist", "Other": "Other"},
+        "role_descriptions": {
+            "City resident": "I live in Florence, Ravenna, Bologna, or Ferrara.",
+            "City user": "I regularly use one of these historic centres for study, work, or other daily activities.",
+            "Current tourist": "I am currently visiting one of these historic centres as a tourist.",
+            "Previous tourist": "I have visited one or more of these historic centres before.",
+            "Other": "I do not fall into any of the above options."
+        },
+        "start_btn": "Start survey",
         "btn_back": "⬅️ Back",
-        "btn_skip": "Skip ⏩",
+        "btn_skip_equal": "Both images match equally",
+        "btn_skip_neither": "Neither image matches",
         "btn_select": "Select Above",
         "success": "✅ Data synced!",
         "end_title": "Completed",
@@ -105,8 +99,13 @@ LANG_DICT = {
     },
 
     "中文": {
-        "title": "历史中心街景主观感知研究",
-        "intro": "欢迎！本项研究旨在调查人们对历史中心的感知。您的参与将帮助我们校准模型。",
+        "title": "历史中心街景图像感知",
+        "intro": """欢迎！本问卷是关于意大利历史中心步行性与街道层面感知的博士研究项目的一部分。本研究旨在了解居民和游客如何感知佛罗伦萨、拉文纳、博洛尼亚和费拉拉历史中心的街道环境。
+
+您将看到30组街景图像对，每组图像都会对应一个感知描述。请根据该描述选择更符合的一张图片，例如安全、活跃、高档、美丽、乏味或压抑。如果两张图片同样符合描述，或者两张图片都不明显符合描述，您可以选择相应选项。
+
+本问卷为匿名问卷，完成约需5分钟。您的回答将帮助我们更好地理解历史中心中的主观感知。""",
+        "consent_intro": "开始前，请阅读知情告知书，并确认您是否同意参与本匿名学术问卷。",
         "privacy_btn": "📄 查看知情告知书全文",
         "privacy_content": """
             **1. 项目负责人**：Elisa Conticelli 教授（博洛尼亚大学）。
@@ -125,38 +124,27 @@ LANG_DICT = {
 
             **8. 联系方式**：Elisa Conticelli 教授 (elisa.conticelli@unibo.it) 或 陈方宇 (fangyu.chen2@unibo.it)。
         """,
-        "privacy_agree": "我已年满18周岁，阅读并同意上述告知书内容。",
-
-        "instr_title": "指南：",
-        "instr_1": "您将看到 **30 对** 街景图像。",
-        "instr_2": "请选择最符合描述的一张。",
-        "instr_3": "完成约需 **5 分钟**。",
-        "instr_4": "如果两张图片看起来差不多，请点击 **跳过**。",
-
+        "privacy_agree": "我确认已年满18周岁，已阅读知情告知书，并同意参与本问卷。",
         "gender_title": "请选择您的性别：",
         "gender_placeholder": "请选择",
-        "gender_options": {
-            "Male": "男性",
-            "Female": "女性"
-        },
-
+        "gender_options": {"Male": "男性", "Female": "女性", "Other": "其他"},
         "age_title": "请选择您的年龄组：",
         "age_placeholder": "请选择",
-        "age_options": {
-            "18-29": "18–29岁",
-            "30-44": "30–44岁",
-            "45-59": "45–59岁",
-            "60+": "60岁及以上"
-        },
-
+        "age_options": {"18-29": "18–29岁", "30-44": "30–44岁", "45-59": "45–59岁", "60+": "60岁及以上"},
         "role_title": "请选择您的角色：",
-        "role_res": "当地居民",
-        "role_tour": "游客",
-
-        "q_pre": "哪条街道看起来更",
-        "q_post": "？",
+        "role_placeholder": "请选择",
+        "role_options": {"City resident": "城市居民", "City user": "城市使用者", "Current tourist": "游客", "Previous tourist": "曾经到访游客", "Other": "其他"},
+        "role_descriptions": {
+            "City resident": "我居住在佛罗伦萨、拉文纳、博洛尼亚或费拉拉。",
+            "City user": "我经常因学习、工作或其他日常活动使用其中一个历史中心。",
+            "Current tourist": "我目前正作为游客访问其中一个历史中心。",
+            "Previous tourist": "我曾经访问过一个或多个这些历史中心。",
+            "Other": "以上选项均不符合我的情况。"
+        },
+        "start_btn": "开始问卷",
         "btn_back": "⬅️ 返回",
-        "btn_skip": "跳过 ⏩",
+        "btn_skip_equal": "两张同样符合",
+        "btn_skip_neither": "两张都不符合",
         "btn_select": "选择上方图片",
         "success": "✅ 数据已同步！",
         "end_title": "问卷已完成",
@@ -165,8 +153,13 @@ LANG_DICT = {
     },
 
     "Italiano": {
-        "title": "Percezione Soggettiva delle Immagini Stradali del Centro Storico",
-        "intro": "Benvenuti! Questa ricerca indaga la percezione dei centri storici. Il vostro contributo aiuta a calibrare i nostri modelli.",
+        "title": "Percezione dell’ambiente urbano in aree storiche",
+        "intro": """Benvenuti! Questo questionario fa parte di una ricerca di dottorato in Architettura e Culture del Progetto dell’Università di Bologna sulla pedonalità e sulla percezione da parte dei pedoni delle aree percorribili a piedi nei centri storici italiani. Lo studio esplora come residenti e turisti percepiscono le strade nei centri storici, prendendo a riferimento in particolare quelli di Firenze, Ravenna, Bologna e Ferrara.
+
+Vi verranno mostrate 30 coppie di immagini stradali e un’affermazione, inerente a una sensazione che le immagini vi dovrebbero provocare (come ad esempio sicura, vivace, curata, bella, noiosa o deprimente). Per ogni coppia, scegliete l’immagine che corrisponde meglio all’affermazione proposta. Se entrambe le immagini corrispondono allo stesso modo alla descrizione, oppure se nessuna delle due corrisponde chiaramente, potete selezionare l’opzione corrispondente.
+
+Il questionario è anonimo e richiede circa 5 minuti per essere completato. Le vostre risposte ci aiuteranno a comprendere meglio le percezioni soggettive nei centri storici.""",
+        "consent_intro": "Prima di iniziare, ti invitiamo a leggere l’informativa e a confermare se acconsenti a partecipare a questo questionario accademico anonimo.",
         "privacy_btn": "📄 Leggi Informativa Completa",
         "privacy_content": """
             **1. Responsabile progetto**: Prof.ssa Elisa Conticelli (Università di Bologna).
@@ -185,38 +178,27 @@ LANG_DICT = {
 
             **8. Contatti**: Prof.ssa Elisa Conticelli (elisa.conticelli@unibo.it) e Fangyu Chen (fangyu.chen2@unibo.it).
         """,
-        "privacy_agree": "Dichiaro di essere maggiorenne, ho letto l'informativa e acconsento.",
-
-        "instr_title": "Istruzioni:",
-        "instr_1": "Vi verranno mostrate **30 coppie** di immagini.",
-        "instr_2": "Selezionate quella che meglio si adatta alla descrizione.",
-        "instr_3": "Richiede circa **5 minuti**.",
-        "instr_4": "Se le due immagini sembrano ugualmente adatte, usate **Salta**.",
-
+        "privacy_agree": "Dichiaro di avere almeno 18 anni, di aver letto l’informativa e di acconsentire a partecipare.",
         "gender_title": "Seleziona il tuo genere:",
         "gender_placeholder": "Seleziona",
-        "gender_options": {
-            "Male": "Maschio",
-            "Female": "Femmina"
-        },
-
+        "gender_options": {"Male": "Maschio", "Female": "Femmina", "Other": "Altro"},
         "age_title": "Seleziona la tua fascia d'età:",
         "age_placeholder": "Seleziona",
-        "age_options": {
-            "18-29": "18–29",
-            "30-44": "30–44",
-            "45-59": "45–59",
-            "60+": "60 o più"
-        },
-
+        "age_options": {"18-29": "18–29", "30-44": "30–44", "45-59": "45–59", "60+": "60 o più"},
         "role_title": "Seleziona il tuo ruolo:",
-        "role_res": "Residente",
-        "role_tour": "Turista",
-
-        "q_pre": "Quale strada sembra più ",
-        "q_post": "?",
+        "role_placeholder": "Seleziona",
+        "role_options": {"City resident": "Residente", "City user": "Utente abituale", "Current tourist": "Turista", "Previous tourist": "Turista in passato", "Other": "Altro"},
+        "role_descriptions": {
+            "City resident": "Vivo a Firenze, Ravenna, Bologna o Ferrara.",
+            "City user": "Frequento uno di questi centri storici per studio, lavoro o altre attività.",
+            "Current tourist": "Sto visitando attualmente uno di questi centri storici come turista.",
+            "Previous tourist": "Ho visitato in passato uno o più di questi centri storici.",
+            "Other": "Non mi ritrovo in nessuna delle opzioni proposte."
+        },
+        "start_btn": "Inizia il questionario",
         "btn_back": "⬅️ Indietro",
-        "btn_skip": "Salta ⏩",
+        "btn_skip_equal": "Entrambe corrispondono",
+        "btn_skip_neither": "Nessuna corrisponde",
         "btn_select": "Seleziona sopra",
         "success": "✅ Dati sincronizzati!",
         "end_title": "Completato",
@@ -226,29 +208,35 @@ LANG_DICT = {
 }
 
 CAT_TRANS = {
+    "English": {"Safe": "safe", "Lively": "lively", "Wealthy": "wealthy", "Beautiful": "beautiful", "Boring": "boring", "Depressing": "depressing"},
+    "中文": {"Safe": "安全", "Lively": "活跃", "Wealthy": "高档", "Beautiful": "美丽", "Boring": "无聊", "Depressing": "压抑"},
+    "Italiano": {"Safe": "sicura", "Lively": "vivace", "Wealthy": "curata", "Beautiful": "bella", "Boring": "noiosa", "Depressing": "deprimente"}
+}
+
+QUESTIONS = {
     "English": {
-        "Safe": "safe",
-        "Lively": "lively",
-        "Wealthy": "wealthy",
-        "Beautiful": "beautiful",
-        "Boring": "boring",
-        "Depressing": "depressing"
+        "Safe": "From a pedestrian’s perspective, which street would feel safer while walking?",
+        "Lively": "From a pedestrian’s perspective, which street would feel more lively while walking?",
+        "Wealthy": "From a pedestrian’s perspective, which street would feel more wealthy while walking?",
+        "Beautiful": "From a pedestrian’s perspective, which street would feel more beautiful while walking?",
+        "Boring": "From a pedestrian’s perspective, which street would feel more boring while walking?",
+        "Depressing": "From a pedestrian’s perspective, which street would feel more depressing while walking?"
     },
     "中文": {
-        "Safe": "安全",
-        "Lively": "活跃",
-        "Wealthy": "高档",
-        "Beautiful": "美丽",
-        "Boring": "乏味",
-        "Depressing": "压抑"
+        "Safe": "从行人的视角出发，在哪条街道行走时你会感觉更安全？",
+        "Lively": "从行人的视角出发，在哪条街道行走时你会感觉更活跃？",
+        "Wealthy": "从行人的视角出发，在哪条街道行走时你会感觉更高档？",
+        "Beautiful": "从行人的视角出发，在哪条街道行走时你会感觉更美丽？",
+        "Boring": "从行人的视角出发，在哪条街道行走时你会感觉更无聊？",
+        "Depressing": "从行人的视角出发，在哪条街道行走时你会感觉更压抑？"
     },
     "Italiano": {
-        "Safe": "sicura",
-        "Lively": "vivace",
-        "Wealthy": "benestante",
-        "Beautiful": "bella",
-        "Boring": "noiosa",
-        "Depressing": "deprimente"
+        "Safe": "Dal punto di vista di un pedone, quale strada sembra più sicura da percorrere a piedi?",
+        "Lively": "Dal punto di vista di un pedone, quale strada sembra più vivace (stimolante) da percorrere a piedi?",
+        "Wealthy": "Dal punto di vista di un pedone, quale strada sembra più curata da percorrere a piedi?",
+        "Beautiful": "Dal punto di vista di un pedone, quale strada sembra più bella da percorrere a piedi?",
+        "Boring": "Dal punto di vista di un pedone, quale strada sembra più noiosa da percorrere a piedi?",
+        "Depressing": "Dal punto di vista di un pedone, quale strada sembra più deprimente da percorrere a piedi?"
     }
 }
 
@@ -427,7 +415,7 @@ def make_event(
     """
     生成一条事件记录。
     event_type 可以是：
-    start / vote / skip / back
+    start / vote / skip_equal / skip_neither / back
     """
     st.session_state.event_seq += 1
 
@@ -566,6 +554,31 @@ def record_vote(winner, cl, il, cr, ir, cat_eng):
         st.session_state.step = "end"
 
 
+def record_skip(skip_type, cl, il, cr, ir, cat_eng):
+    """
+    记录无法明确选择左右图片的情况。
+    skip_type 可以是：skip_equal / skip_neither
+    """
+    st.session_state.skip_count += 1
+
+    skip_event = make_event(
+        event_type=skip_type,
+        category=cat_eng,
+        left_img=f"{cl}/{il}",
+        right_img=f"{cr}/{ir}",
+        winner="",
+        case_l=cl,
+        case_r=cr,
+        question_number=st.session_state.vote_count + 1,
+        completed=False
+    )
+
+    safe_log_event(skip_event)
+
+    if "pair" in st.session_state:
+        del st.session_state.pair
+
+
 # --- 8. 状态管理 ---
 if "lang" not in st.session_state:
     st.session_state.lang = "English"
@@ -616,16 +629,11 @@ if st.session_state.step == "onboarding":
 
     st.title(f"🏙️ {T['title']}")
 
-    st.markdown(
-        f"{T['intro']}\n\n"
-        f"**{T['instr_title']}**\n"
-        f"* {T['instr_1']}\n"
-        f"* {T['instr_2']}\n"
-        f"* {T['instr_3']}\n"
-        f"* {T['instr_4']}"
-    )
+    st.markdown(T["intro"])
 
     st.divider()
+
+    st.markdown(T["consent_intro"])
 
     # 弹窗按钮
     if st.button(T["privacy_btn"]):
@@ -637,7 +645,7 @@ if st.session_state.step == "onboarding":
     # 性别
     gender = st.selectbox(
         T["gender_title"],
-        options=["", "Male", "Female"],
+        options=["", "Male", "Female", "Other"],
         format_func=lambda x: T["gender_placeholder"] if x == "" else T["gender_options"][x],
         key="gender_input"
     )
@@ -654,31 +662,30 @@ if st.session_state.step == "onboarding":
 
     st.subheader(T["role_title"])
 
-    c1, c2 = st.columns(2)
+    role = st.selectbox(
+        T["role_title"],
+        options=["", "City resident", "City user", "Current tourist", "Previous tourist", "Other"],
+        format_func=lambda x: T["role_placeholder"] if x == "" else T["role_options"][x],
+        key="role_input",
+        label_visibility="collapsed"
+    )
 
-    with c1:
-        if st.button(T["role_res"], disabled=not basic_info_completed):
-            st.session_state.gender = gender
-            st.session_state.age_group = age_group
-            st.session_state.user_type = "Resident"
-            st.session_state.step = "voting"
+    if role != "":
+        st.caption(T["role_descriptions"][role])
 
-            start_event = make_event(event_type="start")
-            safe_log_event(start_event)
+    basic_info_completed = basic_info_completed and role != ""
 
-            st.rerun()
+    if st.button(T["start_btn"], disabled=not basic_info_completed):
+        st.session_state.gender = gender
+        st.session_state.age_group = age_group
+        st.session_state.user_type = role
+        st.session_state.step = "voting"
 
-    with c2:
-        if st.button(T["role_tour"], disabled=not basic_info_completed):
-            st.session_state.gender = gender
-            st.session_state.age_group = age_group
-            st.session_state.user_type = "Tourist"
-            st.session_state.step = "voting"
+        start_event = make_event(event_type="start")
+        safe_log_event(start_event)
 
-            start_event = make_event(event_type="start")
-            safe_log_event(start_event)
+        st.rerun()
 
-            st.rerun()
 
 
 elif st.session_state.step == "voting":
@@ -713,12 +720,13 @@ elif st.session_state.step == "voting":
     cl, il, cr, ir = st.session_state.pair
 
     cat_eng = st.session_state.question_pool[st.session_state.vote_count]
-    display_cat = CAT_TRANS[st.session_state.lang][cat_eng]
+    question_text = QUESTIONS[st.session_state.lang][cat_eng]
 
     st.markdown(
-        f'<p class="question-text">{T["q_pre"]}<span class="keyword">{display_cat}</span>{T["q_post"]}</p>',
+        f'<p class="question-text">{question_text}</p>',
         unsafe_allow_html=True
     )
+
 
     col1, col2 = st.columns(2)
 
@@ -752,7 +760,7 @@ elif st.session_state.step == "voting":
 
     st.write("")
 
-    b1, b2 = st.columns(2)
+    b1, b2, b3 = st.columns(3)
 
     with b1:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
@@ -784,25 +792,31 @@ elif st.session_state.step == "voting":
     with b2:
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
 
-        if st.button(T["btn_skip"]):
-            st.session_state.skip_count += 1
-
-            skip_event = make_event(
-                event_type="skip",
-                category=cat_eng,
-                left_img=f"{cl}/{il}",
-                right_img=f"{cr}/{ir}",
-                winner="",
-                case_l=cl,
-                case_r=cr,
-                question_number=st.session_state.vote_count + 1,
-                completed=False
+        if st.button(T["btn_skip_equal"]):
+            record_skip(
+                skip_type="skip_equal",
+                cl=cl,
+                il=il,
+                cr=cr,
+                ir=ir,
+                cat_eng=cat_eng
             )
-            safe_log_event(skip_event)
+            st.rerun()
 
-            if "pair" in st.session_state:
-                del st.session_state.pair
+        st.markdown("</div>", unsafe_allow_html=True)
 
+    with b3:
+        st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
+
+        if st.button(T["btn_skip_neither"]):
+            record_skip(
+                skip_type="skip_neither",
+                cl=cl,
+                il=il,
+                cr=cr,
+                ir=ir,
+                cat_eng=cat_eng
+            )
             st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
