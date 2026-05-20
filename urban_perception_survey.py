@@ -29,7 +29,7 @@ st.markdown("""
     .progress-bar { background-color: #4CAF50; height: 100%; border-radius: 10px; transition: width 0.3s; }
     .progress-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 18px; font-weight: bold; }
     .question-text { font-size: 1.4rem !important; font-weight: 400; text-align: left !important; margin: 10px 0px !important; color: #1E1E1E; }
-    .keyword { font-weight: 700; color: #000; } 
+    .keyword { font-weight: 700; color: #000; }
     /* 弹窗内容滚动美化 */
     div[data-testid="stDialog"] .stMarkdown { max-height: 65vh; overflow-y: auto; font-size: 0.95rem; line-height: 1.5; padding: 10px; }
     @media (max-width: 640px) {
@@ -78,8 +78,13 @@ The survey is anonymous and takes about 5 minutes to complete. Your responses wi
         "age_placeholder": "Please select",
         "age_options": {"18-29": "18–29", "30-44": "30–44", "45-59": "45–59", "60+": "60 or above"},
         "role_title": "Please identify your role:",
-        "role_placeholder": "Please select",
-        "role_options": {"City resident": "City resident", "City user": "City user", "Current tourist": "Current tourist", "Previous tourist": "Previous tourist", "Other": "Other"},
+        "role_options": {
+            "City resident": "City resident",
+            "City user": "City user",
+            "Current tourist": "Current tourist",
+            "Previous tourist": "Previous tourist",
+            "Other": "Other"
+        },
         "role_descriptions": {
             "City resident": "I live in Florence, Ravenna, Bologna, or Ferrara.",
             "City user": "I regularly use one of these historic centres for study, work, or other daily activities.",
@@ -132,8 +137,13 @@ The survey is anonymous and takes about 5 minutes to complete. Your responses wi
         "age_placeholder": "请选择",
         "age_options": {"18-29": "18–29岁", "30-44": "30–44岁", "45-59": "45–59岁", "60+": "60岁及以上"},
         "role_title": "请选择您的角色：",
-        "role_placeholder": "请选择",
-        "role_options": {"City resident": "城市居民", "City user": "城市使用者", "Current tourist": "游客", "Previous tourist": "曾经到访游客", "Other": "其他"},
+        "role_options": {
+            "City resident": "城市居民",
+            "City user": "城市使用者",
+            "Current tourist": "游客",
+            "Previous tourist": "曾经到访游客",
+            "Other": "其他"
+        },
         "role_descriptions": {
             "City resident": "我居住在佛罗伦萨、拉文纳、博洛尼亚或费拉拉。",
             "City user": "我经常因学习、工作或其他日常活动使用其中一个历史中心。",
@@ -143,8 +153,8 @@ The survey is anonymous and takes about 5 minutes to complete. Your responses wi
         },
         "start_btn": "开始问卷",
         "btn_back": "⬅️ 返回",
-        "btn_skip_equal": "两张同样符合",
-        "btn_skip_neither": "两张都不符合",
+        "btn_skip_equal": "两张图片同样符合",
+        "btn_skip_neither": "两张图片都不符合",
         "btn_select": "选择上方图片",
         "success": "✅ 数据已同步！",
         "end_title": "问卷已完成",
@@ -160,7 +170,7 @@ Vi verranno mostrate 30 coppie di immagini stradali e un’affermazione, inerent
 
 Il questionario è anonimo e richiede circa 5 minuti per essere completato. Le vostre risposte ci aiuteranno a comprendere meglio le percezioni soggettive nei centri storici.""",
         "consent_intro": "Prima di iniziare, ti invitiamo a leggere l’informativa e a confermare se acconsenti a partecipare a questo questionario accademico anonimo.",
-        "privacy_btn": "📄 Leggi Informativa Completa",
+        "privacy_btn": "📄 Leggi l’informativa",
         "privacy_content": """
             **1. Responsabile progetto**: Prof.ssa Elisa Conticelli (Università di Bologna).
 
@@ -186,8 +196,13 @@ Il questionario è anonimo e richiede circa 5 minuti per essere completato. Le v
         "age_placeholder": "Seleziona",
         "age_options": {"18-29": "18–29", "30-44": "30–44", "45-59": "45–59", "60+": "60 o più"},
         "role_title": "Seleziona il tuo ruolo:",
-        "role_placeholder": "Seleziona",
-        "role_options": {"City resident": "Residente", "City user": "Utente abituale", "Current tourist": "Turista", "Previous tourist": "Turista in passato", "Other": "Altro"},
+        "role_options": {
+            "City resident": "Residente",
+            "City user": "Utente abituale",
+            "Current tourist": "Turista",
+            "Previous tourist": "Turista in passato",
+            "Other": "Altro"
+        },
         "role_descriptions": {
             "City resident": "Vivo a Firenze, Ravenna, Bologna o Ferrara.",
             "City user": "Frequento uno di questi centri storici per studio, lavoro o altre attività.",
@@ -197,20 +212,14 @@ Il questionario è anonimo e richiede circa 5 minuti per essere completato. Le v
         },
         "start_btn": "Inizia il questionario",
         "btn_back": "⬅️ Indietro",
-        "btn_skip_equal": "Entrambe corrispondono",
-        "btn_skip_neither": "Nessuna corrisponde",
+        "btn_skip_equal": "Entrambe corrispondono allo stesso modo",
+        "btn_skip_neither": "Nessuna corrisponde alla descrizione",
         "btn_select": "Seleziona sopra",
         "success": "✅ Dati sincronizzati!",
         "end_title": "Completato",
         "thank_you": "Grazie per il tuo tempo!",
         "restart": "Ricomincia"
     }
-}
-
-CAT_TRANS = {
-    "English": {"Safe": "safe", "Lively": "lively", "Wealthy": "wealthy", "Beautiful": "beautiful", "Boring": "boring", "Depressing": "depressing"},
-    "中文": {"Safe": "安全", "Lively": "活跃", "Wealthy": "高档", "Beautiful": "美丽", "Boring": "无聊", "Depressing": "压抑"},
-    "Italiano": {"Safe": "sicura", "Lively": "vivace", "Wealthy": "curata", "Beautiful": "bella", "Boring": "noiosa", "Depressing": "deprimente"}
 }
 
 QUESTIONS = {
@@ -237,6 +246,33 @@ QUESTIONS = {
         "Beautiful": "Dal punto di vista di un pedone, quale strada sembra più bella da percorrere a piedi?",
         "Boring": "Dal punto di vista di un pedone, quale strada sembra più noiosa da percorrere a piedi?",
         "Depressing": "Dal punto di vista di un pedone, quale strada sembra più deprimente da percorrere a piedi?"
+    }
+}
+
+CAT_TRANS = {
+    "English": {
+        "Safe": "safe",
+        "Lively": "lively",
+        "Wealthy": "wealthy",
+        "Beautiful": "beautiful",
+        "Boring": "boring",
+        "Depressing": "depressing"
+    },
+    "中文": {
+        "Safe": "安全",
+        "Lively": "活跃",
+        "Wealthy": "高档",
+        "Beautiful": "美丽",
+        "Boring": "无聊",
+        "Depressing": "压抑"
+    },
+    "Italiano": {
+        "Safe": "sicura",
+        "Lively": "vivace",
+        "Wealthy": "curata",
+        "Beautiful": "bella",
+        "Boring": "noiosa",
+        "Depressing": "deprimente"
     }
 }
 
@@ -317,7 +353,7 @@ def get_new_pair(all_img_data):
 
 
 # --- 6. 弹窗对话框函数 ---
-@st.dialog("Information Sheet / Informativa")
+@st.dialog("Information Sheet / Informativa / 知情告知书")
 def show_privacy_modal(content):
     st.markdown(content)
     if st.button("Close / Chiudi / 关闭"):
@@ -554,31 +590,6 @@ def record_vote(winner, cl, il, cr, ir, cat_eng):
         st.session_state.step = "end"
 
 
-def record_skip(skip_type, cl, il, cr, ir, cat_eng):
-    """
-    记录无法明确选择左右图片的情况。
-    skip_type 可以是：skip_equal / skip_neither
-    """
-    st.session_state.skip_count += 1
-
-    skip_event = make_event(
-        event_type=skip_type,
-        category=cat_eng,
-        left_img=f"{cl}/{il}",
-        right_img=f"{cr}/{ir}",
-        winner="",
-        case_l=cl,
-        case_r=cr,
-        question_number=st.session_state.vote_count + 1,
-        completed=False
-    )
-
-    safe_log_event(skip_event)
-
-    if "pair" in st.session_state:
-        del st.session_state.pair
-
-
 # --- 8. 状态管理 ---
 if "lang" not in st.session_state:
     st.session_state.lang = "English"
@@ -662,18 +673,25 @@ if st.session_state.step == "onboarding":
 
     st.subheader(T["role_title"])
 
-    role = st.selectbox(
+    role_keys = [
+        "City resident",
+        "City user",
+        "Current tourist",
+        "Previous tourist",
+        "Other"
+    ]
+
+    role = st.radio(
         T["role_title"],
-        options=["", "City resident", "City user", "Current tourist", "Previous tourist", "Other"],
-        format_func=lambda x: T["role_placeholder"] if x == "" else T["role_options"][x],
+        options=role_keys,
+        format_func=lambda x: T["role_options"][x],
+        captions=[T["role_descriptions"][x] for x in role_keys],
+        index=None,
         key="role_input",
         label_visibility="collapsed"
     )
 
-    if role != "":
-        st.caption(T["role_descriptions"][role])
-
-    basic_info_completed = basic_info_completed and role != ""
+    basic_info_completed = basic_info_completed and role is not None
 
     if st.button(T["start_btn"], disabled=not basic_info_completed):
         st.session_state.gender = gender
@@ -685,7 +703,6 @@ if st.session_state.step == "onboarding":
         safe_log_event(start_event)
 
         st.rerun()
-
 
 
 elif st.session_state.step == "voting":
@@ -726,7 +743,6 @@ elif st.session_state.step == "voting":
         f'<p class="question-text">{question_text}</p>',
         unsafe_allow_html=True
     )
-
 
     col1, col2 = st.columns(2)
 
@@ -793,14 +809,24 @@ elif st.session_state.step == "voting":
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
 
         if st.button(T["btn_skip_equal"]):
-            record_skip(
-                skip_type="skip_equal",
-                cl=cl,
-                il=il,
-                cr=cr,
-                ir=ir,
-                cat_eng=cat_eng
+            st.session_state.skip_count += 1
+
+            skip_event = make_event(
+                event_type="skip_equal",
+                category=cat_eng,
+                left_img=f"{cl}/{il}",
+                right_img=f"{cr}/{ir}",
+                winner="",
+                case_l=cl,
+                case_r=cr,
+                question_number=st.session_state.vote_count + 1,
+                completed=False
             )
+            safe_log_event(skip_event)
+
+            if "pair" in st.session_state:
+                del st.session_state.pair
+
             st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -809,14 +835,24 @@ elif st.session_state.step == "voting":
         st.markdown('<div class="bottom-btns">', unsafe_allow_html=True)
 
         if st.button(T["btn_skip_neither"]):
-            record_skip(
-                skip_type="skip_neither",
-                cl=cl,
-                il=il,
-                cr=cr,
-                ir=ir,
-                cat_eng=cat_eng
+            st.session_state.skip_count += 1
+
+            skip_event = make_event(
+                event_type="skip_neither",
+                category=cat_eng,
+                left_img=f"{cl}/{il}",
+                right_img=f"{cr}/{ir}",
+                winner="",
+                case_l=cl,
+                case_r=cr,
+                question_number=st.session_state.vote_count + 1,
+                completed=False
             )
+            safe_log_event(skip_event)
+
+            if "pair" in st.session_state:
+                del st.session_state.pair
+
             st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -855,3 +891,4 @@ elif st.session_state.step == "end":
     if st.button(T["restart"], disabled=bool(st.session_state.pending_events)):
         st.session_state.clear()
         st.rerun()
+
