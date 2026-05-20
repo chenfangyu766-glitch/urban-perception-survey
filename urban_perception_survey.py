@@ -224,28 +224,28 @@ Il questionario è anonimo e richiede circa 5 minuti per essere completato. Le v
 
 QUESTIONS = {
     "English": {
-        "Safe": "From a pedestrian’s perspective, which street would feel safer while walking?",
-        "Lively": "From a pedestrian’s perspective, which street would feel more lively while walking?",
-        "Wealthy": "From a pedestrian’s perspective, which street would feel more wealthy while walking?",
-        "Beautiful": "From a pedestrian’s perspective, which street would feel more beautiful while walking?",
-        "Boring": "From a pedestrian’s perspective, which street would feel more boring while walking?",
-        "Depressing": "From a pedestrian’s perspective, which street would feel more depressing while walking?"
+        "Safe": "From a pedestrian’s perspective, which street would feel <span class='keyword'>safer</span> while walking?",
+        "Lively": "From a pedestrian’s perspective, which street would feel <span class='keyword'>more lively</span> while walking?",
+        "Wealthy": "From a pedestrian’s perspective, which street would feel <span class='keyword'>more wealthy</span> while walking?",
+        "Beautiful": "From a pedestrian’s perspective, which street would feel <span class='keyword'>more beautiful</span> while walking?",
+        "Boring": "From a pedestrian’s perspective, which street would feel <span class='keyword'>more boring</span> while walking?",
+        "Depressing": "From a pedestrian’s perspective, which street would feel <span class='keyword'>more depressing</span> while walking?"
     },
     "中文": {
-        "Safe": "从行人的视角出发，在哪条街道行走时你会感觉更安全？",
-        "Lively": "从行人的视角出发，在哪条街道行走时你会感觉更活跃？",
-        "Wealthy": "从行人的视角出发，在哪条街道行走时你会感觉更高档？",
-        "Beautiful": "从行人的视角出发，在哪条街道行走时你会感觉更美丽？",
-        "Boring": "从行人的视角出发，在哪条街道行走时你会感觉更无聊？",
-        "Depressing": "从行人的视角出发，在哪条街道行走时你会感觉更压抑？"
+        "Safe": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更安全</span>？",
+        "Lively": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更活跃</span>？",
+        "Wealthy": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更高档</span>？",
+        "Beautiful": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更美丽</span>？",
+        "Boring": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更无聊</span>？",
+        "Depressing": "从行人的视角出发，在哪条街道行走时你会感觉<span class='keyword'>更压抑</span>？"
     },
     "Italiano": {
-        "Safe": "Dal punto di vista di un pedone, quale strada sembra più sicura da percorrere a piedi?",
-        "Lively": "Dal punto di vista di un pedone, quale strada sembra più vivace (stimolante) da percorrere a piedi?",
-        "Wealthy": "Dal punto di vista di un pedone, quale strada sembra più curata da percorrere a piedi?",
-        "Beautiful": "Dal punto di vista di un pedone, quale strada sembra più bella da percorrere a piedi?",
-        "Boring": "Dal punto di vista di un pedone, quale strada sembra più noiosa da percorrere a piedi?",
-        "Depressing": "Dal punto di vista di un pedone, quale strada sembra più deprimente da percorrere a piedi?"
+        "Safe": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più sicura</span> da percorrere a piedi?",
+        "Lively": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più vivace (stimolante)</span> da percorrere a piedi?",
+        "Wealthy": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più curata</span> da percorrere a piedi?",
+        "Beautiful": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più bella</span> da percorrere a piedi?",
+        "Boring": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più noiosa</span> da percorrere a piedi?",
+        "Depressing": "Dal punto di vista di un pedone, quale strada sembra <span class='keyword'>più deprimente</span> da percorrere a piedi?"
     }
 }
 
@@ -891,4 +891,5 @@ elif st.session_state.step == "end":
     if st.button(T["restart"], disabled=bool(st.session_state.pending_events)):
         st.session_state.clear()
         st.rerun()
+
 
