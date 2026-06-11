@@ -877,6 +877,20 @@ elif st.session_state.step == "end":
 
     if not st.session_state.pending_events:
         st.success(T["success"])
+
+        st.markdown("""
+        **SurveySwap completion**
+
+        If you came from SurveySwap, please use the following link to confirm your participation and receive Karma:
+
+        [Confirm completion on SurveySwap](https://surveyswap.io/sr/G9PI-1HON-Y42Z)
+
+        Alternatively, you can enter the code manually:
+
+        **G9PI-1HON-Y42Z**
+
+        If you did not come from SurveySwap, you can ignore this section.
+        """)
     else:
         st.error("Sync Error")
         backup_df = build_backup_votes_df()
